@@ -1,16 +1,15 @@
+import java.util.HashMap;
+
 // Class that provide movement of pieces given their position, according to the state of the board (board represented as bitboard)
 public class PieceMovement {
 
     private static final byte BOARD_SIZE = 64;
-    private static final int A = (int)Math.pow(2,8);
 
     private final BitBoards bitBoards;
-    private static BitBoardMoveGenerator generator;
 
     private static final long[] KING_MOVES = new long[BOARD_SIZE];
-    private static final long[][][] QUEEN_MOVES = new long[BOARD_SIZE][A][A];
-    private static final long[][][] ROOK_MOVES = new long[BOARD_SIZE][A][A];
-    private static final long[][][] BISHOP_MOVES = new long[BOARD_SIZE][A][A];
+    private static final HashMap<Long,Long>[]ROOK_MOVES = (HashMap<Long, Long>[]) new HashMap<?,?>[BOARD_SIZE];
+    private static final HashMap<Long,Long>[]BISHOP_MOVES =  (HashMap<Long, Long>[]) new HashMap<?,?>[BOARD_SIZE];
     private static final long[] KNIGHT_MOVES = new long[BOARD_SIZE];
     private static final long[] WHITE_PAWN_ONLY_MOVES = new long[BOARD_SIZE];
     private static final long[] WHITE_PAWN_CAPTURE = new long[BOARD_SIZE];
@@ -22,11 +21,12 @@ public class PieceMovement {
     // builder receive bitboard
     public PieceMovement(BitBoards bitBoards) {
         this.bitBoards = bitBoards;
-        generator = new BitBoardMoveGenerator();
+        BitBoardMoveGenerator generator = new BitBoardMoveGenerator();
         generator.generateKingMoves(KING_MOVES);
         generator.generateKnightMoves(KNIGHT_MOVES);
         generator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES,WHITE_PAWN_CAPTURE,WHITE);
         generator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES,BLACK_PAWN_CAPTURE,!WHITE);
+        generator.generateLinePieceMoves(ROOK_MOVES,BISHOP_MOVES);
     }
 
     // Given a position of a king, return the moves it can do as bitboard
@@ -38,18 +38,32 @@ public class PieceMovement {
             return KING_MOVES[position] & ~bitBoards.getBlackPieces();
     }
 
-    /*
-    // Given a position of a rook, return the moves it can do as bitboard
-    public long getRookMovement(byte position, boolean color) {
-        int rowValue = getRowValue(), columnValue = getColumnValue();
-        // All the moves it can do without position occupied by same color pieces
+    // Given a position of a queen, return the moves it can do as bitboard
+    public long getQueenMovement(byte position, boolean color) {
+        // All the moves it can do, without the last piece on the end of each line, if its same color
         if (color == WHITE)
-            return ROOK_MOVES[position][rowValue][columnValue] & ~bitBoards.getWhitePieces();
+            return getRookMovement(position,color) | getBishopMovement(position,color) & ~bitBoards.getWhitePieces();
         else
-            return ROOK_MOVES[position][rowValue][columnValue] & ~bitBoards.getBlackPieces();
+            return getRookMovement(position,color) | getBishopMovement(position,color) & ~bitBoards.getBlackPieces();
     }
 
-     */
+    // Given a position of a rook, return the moves it can do as bitboard
+    public long getRookMovement(byte position, boolean color) {
+        // All the moves it can do, without the last piece on the end of each line, if its same color
+        if (color == WHITE)
+            return ROOK_MOVES[position].get(function()) & ~bitBoards.getWhitePieces();
+        else
+            return ROOK_MOVES[position].get(function()) & ~bitBoards.getBlackPieces();
+    }
+
+    // Given a position of a bishop, return the moves it can do as bitboard
+    public long getBishopMovement(byte position, boolean color) {
+        // All the moves it can do, without the last piece on the end of each line, if its same color
+        if (color == WHITE)
+            return BISHOP_MOVES[position].get(function()) & ~bitBoards.getWhitePieces();
+        else
+            return BISHOP_MOVES[position].get(function()) & ~bitBoards.getBlackPieces();
+    }
 
     // Given a position of a knight, return the moves it can do as bitboard
     public long getKnightMovement(byte position, boolean color) {
@@ -67,6 +81,12 @@ public class PieceMovement {
             return (WHITE_PAWN_CAPTURE[position] & bitBoards.getBlackPieces()) | (WHITE_PAWN_ONLY_MOVES[position] & ~bitBoards.getAllPieces());
         else
             return (BLACK_PAWN_CAPTURE[position] & bitBoards.getWhitePieces()) | (BLACK_PAWN_ONLY_MOVES[position] & ~bitBoards.getAllPieces());
+    }
+
+    // TODO: finish function
+    private long function() {
+        //dummy function
+        return 0;
     }
 
 }
