@@ -1,17 +1,17 @@
-
 // Class that represent a game of chess, using bitboards for each type and color
 public class BitBoards {
+
     private long whiteKing;
     private long whiteQueens;
     private long whiteRooks;
-    private long whiteKnights;
     private long whiteBishops;
+    private long whiteKnights;
     private long whitePawns;
     private long blackKing;
     private long blackQueens;
     private long blackRooks;
-    private long blackKnights;
     private long blackBishops;
+    private long blackKnights;
     private long blackPawns;
 
     // Return a long that represent a bitboard with all the white pieces
