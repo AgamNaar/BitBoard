@@ -15,6 +15,8 @@ public class PieceMovement {
     private static final long[] WHITE_PAWN_CAPTURE = new long[BOARD_SIZE];
     private static final long[] BLACK_PAWN_ONLY_MOVES = new long[BOARD_SIZE];
     private static final long[] BLACK_PAWN_CAPTURE = new long[BOARD_SIZE];
+    private static final long[] ROOK_MASK = new long[BOARD_SIZE];
+    private static final long[] BISHOP_MASK = new long[BOARD_SIZE];
 
     private static final boolean WHITE = true;
 
@@ -27,6 +29,8 @@ public class PieceMovement {
         generator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES,WHITE_PAWN_CAPTURE,WHITE);
         generator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES,BLACK_PAWN_CAPTURE,!WHITE);
         generator.generateLinePieceMoves(ROOK_MOVES,BISHOP_MOVES);
+        generator.generateMaskRook(ROOK_MASK);
+        generator.generateMaskBishop(BISHOP_MASK);
     }
 
     // Given a position of a king, return the moves it can do as bitboard
@@ -51,18 +55,18 @@ public class PieceMovement {
     public long getRookMovement(byte position, boolean color) {
         // All the moves it can do, without the last piece on the end of each line, if its same color
         if (color == WHITE)
-            return ROOK_MOVES[position].get(function()) & ~bitBoards.getWhitePieces();
+            return ROOK_MOVES[position].get(ROOK_MASK[position]) & ~bitBoards.getWhitePieces();
         else
-            return ROOK_MOVES[position].get(function()) & ~bitBoards.getBlackPieces();
+            return ROOK_MOVES[position].get(ROOK_MASK[position]) & ~bitBoards.getBlackPieces();
     }
 
     // Given a position of a bishop, return the moves it can do as bitboard
     public long getBishopMovement(byte position, boolean color) {
         // All the moves it can do, without the last piece on the end of each line, if its same color
         if (color == WHITE)
-            return BISHOP_MOVES[position].get(function()) & ~bitBoards.getWhitePieces();
+            return BISHOP_MOVES[position].get(BISHOP_MASK[position]) & ~bitBoards.getWhitePieces();
         else
-            return BISHOP_MOVES[position].get(function()) & ~bitBoards.getBlackPieces();
+            return BISHOP_MOVES[position].get(BISHOP_MASK[position]) & ~bitBoards.getBlackPieces();
     }
 
     // Given a position of a knight, return the moves it can do as bitboard
@@ -83,10 +87,6 @@ public class PieceMovement {
             return (BLACK_PAWN_CAPTURE[position] & bitBoards.getWhitePieces()) | (BLACK_PAWN_ONLY_MOVES[position] & ~bitBoards.getAllPieces());
     }
 
-    // TODO: finish function
-    private long function() {
-        //dummy function
-        return 0;
-    }
+
 
 }

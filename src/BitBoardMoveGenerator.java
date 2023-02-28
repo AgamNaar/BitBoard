@@ -11,6 +11,7 @@ public class BitBoardMoveGenerator {
     private static final byte[] KNIGHT_OFFSETS = {-17, -15, -10, -6, 6, 10, 15, 17};
     private static final byte[] WHITE_PAWN_OFFSETS_ATK = {7, 9};
     private static final byte[] BLACK_PAWN_OFFSETS_ATK = {-7, -9};
+    private static final byte ALL_BITES_ONE = -1;
 
     public static final boolean WHITE = true;
 
@@ -39,6 +40,20 @@ public class BitBoardMoveGenerator {
             getPawnMoves(movesArray, color);
             getMoves(atkArray, BLACK_PAWN_OFFSETS_ATK);
         }
+    }
+
+    // Generate a mask for squares for rook row and columns
+    public void generateMaskRook(long[] maskArray) {
+        for (byte square = 0; square < 64; square++)
+            maskArray[square] = tobitMapRook(square, ALL_BITES_ONE, ALL_BITES_ONE);
+    }
+
+    // Generate a mask for squares for bishop row and columns
+    public void generateMaskBishop(long[] maskArray) {
+        for (byte square = 0; square < 64; square++) {
+            maskArray[square] = tobitMapRook(square, ALL_BITES_ONE, ALL_BITES_ONE);
+        }
+
     }
 
     // Generate only the moves a pawn can do (not including capture)
@@ -77,8 +92,8 @@ public class BitBoardMoveGenerator {
     private void getMovementLinePiece(HashMap<Long, Long>[] moveArrayRook, HashMap<Long, Long>[] moveArrayBishop) {
         // For each square, for each possible values of rows and columns, get the bitboard value
         for (byte square = 0; square < 64; square++) {
-            for (int rowValue = 0; rowValue < 256; rowValue++) {
-                for (int columnValue = 0; columnValue < 256; columnValue++) {
+            for (byte rowValue = -128; rowValue < 128; rowValue++) {
+                for (byte columnValue = -128; columnValue < 128; columnValue++) {
                     long rookMap = tobitMapRook(square, rowValue, columnValue);
                     long bishopMap = tobitMapBishop(square, rowValue, columnValue);
                     long movesRook = getMoves(square, ROOK_OFFSETS, rookMap);
@@ -92,7 +107,7 @@ public class BitBoardMoveGenerator {
     }
 
     // Given a square, rowValue. columnValue: set the value of row/column of the square to be rowValue and columnValue
-    private long tobitMapRook(byte square, int rowValue, int columnValue) {
+    private long tobitMapRook(byte square, byte rowValue, byte columnValue) {
         int row = square % 8;
         long bitboard = 0L;
         for (int i = 0; i < 8; i++) {
@@ -108,7 +123,7 @@ public class BitBoardMoveGenerator {
     }
 
     // Given a square, nwDiagonalValue. neDiagonalValue: set the value of nwDiagonalValue/neDiagonalValue of the square to be nwDiagonalValue/neDiagonalValue
-    private long tobitMapBishop(byte square, int nwDiagonalValue, int neDiagonalValue) {
+    private long tobitMapBishop(byte square, byte nwDiagonalValue, byte neDiagonalValue) {
         int row = square % 8, column = square / 8;
         long bitboard = 0L;
         for (int i = 0; i < 8; i++) {
