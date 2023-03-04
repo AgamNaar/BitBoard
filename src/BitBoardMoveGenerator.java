@@ -11,7 +11,7 @@ public class BitBoardMoveGenerator {
     private static final byte[] KNIGHT_OFFSETS = {-17, -15, -10, -6, 6, 10, 15, 17};
     private static final byte[] WHITE_PAWN_OFFSETS_ATK = {7, 9};
     private static final byte[] BLACK_PAWN_OFFSETS_ATK = {-7, -9};
-    private static final byte ALL_BITES_ONE = -1;
+    private static final long FIRST_8_BITS = 0XFF;
 
     public static final boolean WHITE = true;
 
@@ -45,13 +45,13 @@ public class BitBoardMoveGenerator {
     // Generate a mask for squares for rook row and columns
     public void generateMaskRook(long[] maskArray) {
         for (byte square = 0; square < 64; square++)
-            maskArray[square] = tobitMapRook(square, ALL_BITES_ONE, ALL_BITES_ONE);
+            maskArray[square] = tobitMapRook(square, FIRST_8_BITS, FIRST_8_BITS);
     }
 
     // Generate a mask for squares for bishop row and columns
     public void generateMaskBishop(long[] maskArray) {
         for (byte square = 0; square < 64; square++) {
-            maskArray[square] = tobitMapRook(square, ALL_BITES_ONE, ALL_BITES_ONE);
+            maskArray[square] = tobitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
         }
 
     }
@@ -59,7 +59,7 @@ public class BitBoardMoveGenerator {
     // Generate only the moves a pawn can do (not including capture)
     private void getPawnMoves(long[] moveArray, boolean color) {
         byte offset = (color) ? (byte) 8 : -8;
-        for (byte square = 7; square < 56; square++) {
+        for (byte square = 8; square < 56; square++) {
             long currSquareMoves = 0L;
             currSquareMoves |= squareToBitboard(offset + square);
 
@@ -94,8 +94,8 @@ public class BitBoardMoveGenerator {
         for (byte square = 0; square < 64; square++) {
             for (int rowValue = -128; rowValue < 128; rowValue++) {
                 for (int columnValue = -128; columnValue < 128; columnValue++) {
-                    long rookMap = tobitMapRook(square, (byte)rowValue, (byte)columnValue);
-                    long bishopMap = tobitMapBishop(square, (byte)rowValue, (byte)columnValue);
+                    long rookMap = tobitMapRook(square, (byte) rowValue, (byte) columnValue);
+                    long bishopMap = tobitMapBishop(square, (byte) rowValue, (byte) columnValue);
                     long movesRook = getMoves(square, ROOK_OFFSETS, rookMap);
                     long movesBishop = getMoves(square, BISHOP_OFFSETS, bishopMap);
                     moveArrayRook[square].put(rookMap, movesRook);
@@ -107,31 +107,34 @@ public class BitBoardMoveGenerator {
     }
 
     // Given a square, rowValue. columnValue: set the value of row/column of the square to be rowValue and columnValue
-    private long tobitMapRook(byte square, byte rowValue, byte columnValue) {
-        int row = square % 8;
-        long bitboard = 0L;
-        for (int i = 0; i < 8; i++) {
-            long rowMask = ((long) rowValue & 0xFF) << (i * 8);
-            long colMask = ((long) columnValue & 0xFF) << i;
-            if (i == row) {
-                bitboard |= rowMask;
-            }
-            bitboard |= colMask;
-        }
-        return bitboard;
+    private long tobitMapRook(byte square, long rowValue, long columnValue) {
+        int row = square / 8, column = square % 8;
+        long rowMask = rowValue << (8 * row), columnMask = 0;
 
+        for (int i = 0; i < 8; i++) {
+            // Extract i'th bit value from columnValue, move it the 0 bit position
+            long bitValue = columnValue & (1 << i) >> i;
+            // Add it by moving it to its right row
+            columnMask = columnMask | (bitValue << (column + (i * 8)));
+        }
+        return rowMask | columnMask;
     }
 
+    // TODO: fix
     // Given a square, nwDiagonalValue. neDiagonalValue: set the value of nwDiagonalValue/neDiagonalValue of the square to be nwDiagonalValue/neDiagonalValue
-    private long tobitMapBishop(byte square, byte nwDiagonalValue, byte neDiagonalValue) {
-        int row = square % 8, column = square / 8;
-        long bitboard = 0L;
+    private long tobitMapBishop(byte square, long nwDiagonalValue, long neDiagonalValue) {
+        long mask1 = 0x8040201008040201L; // bit mask for first diagonal
+        long mask2 = 0x0102040810204080L; // bit mask for second diagonal
+        long mask = square % 2 == 0 ? mask1 : mask2; // determine which diagonal to use based on position
+        long result = 0L;
         for (int i = 0; i < 8; i++) {
-            long nwDiagonalMask = ((long) nwDiagonalValue & 0xFF) << ((i - column + 7) % 8) * 9;
-            long neDiagonalMask = ((long) neDiagonalValue & 0xFF) << (i + column) % 8 * 9;
-            bitboard |= (i == row) ? nwDiagonalMask | neDiagonalMask : 0L;
+            if ((mask & (1L << i)) != 0) {
+                result |= ((nwDiagonalValue >> (i * 8)) & 0xFFL) << (i * 9); // insert diagonal1 value
+            } else {
+                result |= ((neDiagonalValue >> (i * 8)) & 0xFFL) << (i * 9); // insert diagonal2 value
+            }
         }
-        return bitboard;
+        return result;
     }
 
     // Given a square, an array of offsets and a long that represent the current board
@@ -163,6 +166,7 @@ public class BitBoardMoveGenerator {
         return result;
     }
 
+    // TODO: not working
     // Given an offset and a square, check if that offset from that square is legal
     // If on the last/first rank, is not outside of board
     // If on the right/left most file, is not outside of board
