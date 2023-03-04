@@ -92,10 +92,10 @@ public class BitBoardMoveGenerator {
     private void getMovementLinePiece(HashMap<Long, Long>[] moveArrayRook, HashMap<Long, Long>[] moveArrayBishop) {
         // For each square, for each possible values of rows and columns, get the bitboard value
         for (byte square = 0; square < 64; square++) {
-            for (byte rowValue = -128; rowValue < 128; rowValue++) {
-                for (byte columnValue = -128; columnValue < 128; columnValue++) {
-                    long rookMap = tobitMapRook(square, rowValue, columnValue);
-                    long bishopMap = tobitMapBishop(square, rowValue, columnValue);
+            for (int rowValue = -128; rowValue < 128; rowValue++) {
+                for (int columnValue = -128; columnValue < 128; columnValue++) {
+                    long rookMap = tobitMapRook(square, (byte)rowValue, (byte)columnValue);
+                    long bishopMap = tobitMapBishop(square, (byte)rowValue, (byte)columnValue);
                     long movesRook = getMoves(square, ROOK_OFFSETS, rookMap);
                     long movesBishop = getMoves(square, BISHOP_OFFSETS, bishopMap);
                     moveArrayRook[square].put(rookMap, movesRook);

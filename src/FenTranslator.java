@@ -40,7 +40,7 @@ public class FenTranslator {
             if (Character.isDigit(curr))
                 square = square + Character.getNumericValue(curr);
             else if (curr == '/') {// End of a row, don't advance square
-                square--;
+                continue;
             } else { // It's a piece, get its fen type, and if its upper case its white, lower is black
                 if (Character.isUpperCase(curr))
                     createPieceFen(curr, square, WHITE, bitBoards);

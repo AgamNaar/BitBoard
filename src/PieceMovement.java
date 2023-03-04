@@ -20,8 +20,12 @@ public class PieceMovement {
 
     private static final boolean WHITE = true;
 
-    // builder receive bitboard
+    // builder receive bitboard, build all moves per square per piece
     public PieceMovement(BitBoards bitBoards) {
+        for (int i = 0 ; i < 64 ; i++) {
+            ROOK_MOVES[i] = new HashMap<>();
+            BISHOP_MOVES[i] = new HashMap<>();
+        }
         this.bitBoards = bitBoards;
         BitBoardMoveGenerator generator = new BitBoardMoveGenerator();
         generator.generateKingMoves(KING_MOVES);
