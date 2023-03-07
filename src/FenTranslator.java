@@ -30,7 +30,7 @@ public class FenTranslator {
 
     // extract from the fen all the position of all the pieces, insert into bitBoards
     private void getFenPieces(BitBoards bitBoards, String fen) {
-        int square = 0;
+        int square = 63;
 
         // Run on the entire fen string
         for (int i = 0; i < fen.length(); i++) {
@@ -38,16 +38,14 @@ public class FenTranslator {
 
             // If it's a digit skip that amount of squares
             if (Character.isDigit(curr))
-                square = square + Character.getNumericValue(curr);
-            else if (curr == '/') {// End of a row, don't advance square
-                continue;
-            } else { // It's a piece, get its fen type, and if its upper case its white, lower is black
+                square = square - Character.getNumericValue(curr);
+            else if (curr != '/') { // It's a piece, get its fen type, and if its upper case its white, lower is black
                 if (Character.isUpperCase(curr))
                     createPieceFen(curr, square, WHITE, bitBoards);
                 else
                     createPieceFen(curr, square, !WHITE, bitBoards);
 
-                square++;
+                square--;
             }
         }
     }
