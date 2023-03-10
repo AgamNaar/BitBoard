@@ -9,6 +9,9 @@ public class tempGui extends JFrame {
     private final PieceMovement pieceMovement;
     private final JButton[][] board;
 
+    int preRow = -1, preCol = -1;
+    long preMoves = 0;
+
 
     public tempGui() {
         super("Grid of Buttons");
@@ -67,6 +70,119 @@ public class tempGui extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(tempGui::new);
+    }
+
+
+    private void updateBoard() {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                if ((row + col) % 2 == 0) {
+                    board[row][col].setBackground(Color.WHITE);
+                } else {
+                    board[row][col].setBackground(Color.GRAY);
+                }
+                long square = (row * 8) + col;
+                long squareBit = 1L << square;
+                char piece = squareToPiece(squareBit);
+                board[row][col].setText(piece + " ");
+            }
+        }
+
+
+    }
+
+    private boolean[] convertLongMovementToArr(long movement) {
+        boolean[] map = new boolean[64];
+        long mask = 1;
+        for (int i = 0; i < 64; i++) {
+            map[i] = ((mask << i) & movement) != 0;
+        }
+        return map;
+    }
+
+
+    private void function(int currRow, int curCol) {
+
+        if (preCol == -1 && preRow == -1) {
+            long square = (currRow * 8L) + curCol;
+            long bitSquare = 1L << square;
+            long movement = squareToMoves((byte) square, bitSquare);
+            System.out.println("row: " + currRow + " col: " + curCol);
+
+            if (movement != 0) {
+                boolean[] possibleMoves = convertLongMovementToArr(movement);
+                for (int row = 0; row < 8; row++) {
+                    for (int col = 0; col < 8; col++) {
+                        if (possibleMoves[(row * 8) + col]) {
+                            board[row][col].setBackground(Color.YELLOW);
+                        }
+                    }
+                }
+            }
+            preRow = currRow;
+            preCol = curCol;
+            preMoves = movement;
+        } else {
+            if (preMoves != 0) {
+                int squareOffCurr = (currRow * 8) + curCol, preSquare = (preRow * 8) + preCol;
+                boolean[] possibleMoves = convertLongMovementToArr(preMoves);
+                if (possibleMoves[squareOffCurr]) {
+                    executeMove(squareOffCurr, preSquare);
+                }
+            }
+
+            preCol = -1;
+            preRow = -1;
+            updateBoard();
+        }
+
+
+    }
+
+    private void executeMove(int squareOffCurr, int preSquare) {
+        long bitSquare = 1L << preSquare;
+
+        if ((bitSquare & bitBoards.getWhiteKing()) != 0)
+            bitBoards.setWhiteKing(changeVal(bitBoards.getWhiteKing(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getWhiteQueens()) != 0)
+            bitBoards.setWhiteQueens(changeVal(bitBoards.getWhiteQueens(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getWhiteRooks()) != 0)
+            bitBoards.setWhiteRooks(changeVal(bitBoards.getWhiteRooks(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getWhiteBishops()) != 0)
+            bitBoards.setWhiteBishops(changeVal(bitBoards.getWhiteBishops(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getWhiteKnights()) != 0)
+            bitBoards.setWhiteKnights(changeVal(bitBoards.getWhiteKnights(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getWhitePawns()) != 0)
+            bitBoards.setWhitePawns(changeVal(bitBoards.getWhitePawns(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackKing()) != 0)
+            bitBoards.setBlackKing(changeVal(bitBoards.getBlackKing(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackQueens()) != 0)
+            bitBoards.setBlackQueens(changeVal(bitBoards.getBlackQueens(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackRooks()) != 0)
+            bitBoards.setBlackRooks(changeVal(bitBoards.getBlackRooks(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackBishops()) != 0)
+            bitBoards.setBlackBishops(changeVal(bitBoards.getBlackBishops(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackKnights()) != 0)
+            bitBoards.setBlackKnights(changeVal(bitBoards.getBlackKnights(), bitSquare, squareOffCurr));
+
+        if ((bitSquare & bitBoards.getBlackPawns()) != 0)
+            bitBoards.setBlackPawns(changeVal(bitBoards.getBlackPawns(), bitSquare, squareOffCurr));
+    }
+
+    private long changeVal(long bitBoardOfPiece, long bitSquare, int squareOffCurr) {
+        long currPiece = bitBoardOfPiece & ~bitSquare;
+        return currPiece | (1L << squareOffCurr);
+
     }
 
     private char squareToPiece(long square) {
@@ -147,58 +263,6 @@ public class tempGui extends JFrame {
             return pieceMovement.getPawnMovement(square, false);
 
         return 0;
-    }
-
-
-    private void updateBoard() {
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                long square = (row * 8) + col;
-                long squarebit = 1L << square;
-                char piece = squareToPiece(squarebit);
-                board[row][col].setText(piece + " ");
-            }
-        }
-
-
-    }
-
-    private boolean[] convertLongMovementToArr(long movement) {
-        boolean[] map = new boolean[64];
-        long mask = 1;
-        for (int i = 0; i < 64; i++) {
-            map[i] = ((mask << i) & movement) != 0;
-        }
-        return map;
-    }
-
-
-    private void function(int currRow, int curCol) {
-
-        long square = (currRow * 8L) + curCol;
-        long bitSquare = 1L << square;
-        long movement = squareToMoves((byte) square, bitSquare);
-        System.out.println("row: "+currRow+" col: "+curCol);
-
-        if (movement != 0) {
-            boolean[] possibleMoves = convertLongMovementToArr(movement);
-            for (int row = 0; row < 8; row++) {
-                for (int col = 0; col < 8; col++) {
-                    if (possibleMoves[(row * 8) + col]) {
-                        board[row][col].setBackground(Color.YELLOW);
-                    }
-                }
-            }
-        }
-    }
-
-    // for testing, print long as 8x8 of it bits value
-    public static void print ( long toPrint){
-        String binaryString = String.format("%64s", Long.toBinaryString(toPrint)).replace(' ', '0');
-        for (int i = 0; i < 64; i += 8) {
-            System.out.println(binaryString.substring(i, i + 8));
-        }
-        System.out.println();
     }
 
 
