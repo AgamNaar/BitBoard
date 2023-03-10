@@ -11,11 +11,22 @@ public class BitBoardMoveGenerator {
     private static final byte[] KNIGHT_OFFSETS = {-17, -15, -10, -6, 6, 10, 15, 17};
     private static final byte[] WHITE_PAWN_OFFSETS_ATK = {7, 9};
     private static final byte[] BLACK_PAWN_OFFSETS_ATK = {-7, -9};
+    private static final int[] DIAGONAL_LENGTH_BY_POSITION = new int[64];
     private static final long FIRST_8_BITS = 0XFF;
 
     public static final boolean WHITE = true;
     private static final byte MAX_DX_DY = 4;
 
+    public BitBoardMoveGenerator() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (i + j < 8)
+                    DIAGONAL_LENGTH_BY_POSITION[i * 8 + j] = i + 1;
+                else
+                    DIAGONAL_LENGTH_BY_POSITION[i * 8 + j] = i - j + 1;
+            }
+        }
+    }
 
     // Change moves array that in each position of the array, it has a bitboard that represent the moves a king can do in the position
     public void generateKingMoves(long[] movesArray) {
@@ -52,15 +63,13 @@ public class BitBoardMoveGenerator {
 
     // Generate a mask for squares for bishop row and columns
     public void generateMaskBishop(long[] maskArray) {
-        for (byte square = 0; square < 64; square++) {
+        for (byte square = 0; square < 64; square++)
             maskArray[square] = toBitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
-        }
-
     }
 
     // Generate only the moves a pawn can do (not including capture)
     private void generatePawnMoves(long[] moveArray, boolean color) {
-        byte offset = (color) ? (byte) 8 : -8;
+        int offset = (color) ? 8 : -8;
         for (byte square = 8; square < 56; square++) {
             long currSquareMoves = 0L;
             currSquareMoves |= squareToBitboard(offset + square);
@@ -71,7 +80,7 @@ public class BitBoardMoveGenerator {
 
             // if on the 6th row as black, it can move twice
             if (square >= 47 && offset == -8)
-                currSquareMoves |= squareToBitboard((offset * -2) + square);
+                currSquareMoves |= squareToBitboard((offset * 2) + square);
 
             moveArray[square] = currSquareMoves;
         }
@@ -94,20 +103,17 @@ public class BitBoardMoveGenerator {
     private void generateAllMovesLinePiece(HashMap<Long, Long>[] moveArrayRook, HashMap<Long, Long>[] moveArrayBishop) {
         // For each square, for each possible values of rows and columns, get the bitboard value
         for (byte square = 0; square < 64; square++) {
-            for (int rowValue = -128; rowValue < 128; rowValue++) {
-                for (int columnValue = -128; columnValue < 128; columnValue++) {
-                    long val1 = rowValue >= 0 ? rowValue : (~rowValue);
-                    long val2 = columnValue >= 0 ? columnValue : (~columnValue);
-                    long rookMap = toBitMapRook(square, val1, val2);
-                    //long bishopMap = toBitMapBishop(square,  val1,  val2);
+            for (int rowValue = 0; rowValue < 256; rowValue++) {
+                for (int columnValue = 0; columnValue < 256; columnValue++) {
+                    long rookMap = toBitMapRook(square, rowValue, columnValue);
+                    long bishopMap = toBitMapBishop(square, rowValue, columnValue);
                     long movesRook = generateMovesLinePiece(square, ROOK_OFFSETS, rookMap);
-                    // long movesBishop = generateMovesLinePiece(square, BISHOP_OFFSETS, bishopMap);
+                    long movesBishop = generateMovesLinePiece(square, BISHOP_OFFSETS, bishopMap);
                     moveArrayRook[square].put(rookMap, movesRook);
-                    // moveArrayBishop[square].put(bishopMap, movesBishop);
+                    moveArrayBishop[square].put(bishopMap, movesBishop);
                 }
             }
         }
-
     }
 
     // Given a square, rowValue. columnValue: set the value of row/column of the square to be rowValue and columnValue
@@ -117,23 +123,47 @@ public class BitBoardMoveGenerator {
 
         for (int i = 0; i < 8; i++) {
             // Extract i'th bit value from columnValue, move it the 0 bit position
-            long bitValue = columnValue & (1 << i) >> i;
+            long bitValue = extractBit(i, columnValue);
             // Add it by moving it to its right row
             columnMask = columnMask | (bitValue << (column + (i * 8)));
         }
         return rowMask | columnMask;
     }
 
-    // TODO: fix
     // Given a square, nwDiagonalValue. neDiagonalValue: set the value of nwDiagonalValue/neDiagonalValue of the square to be nwDiagonalValue/neDiagonalValue
     private long toBitMapBishop(byte square, long nwDiagonalValue, long neDiagonalValue) {
-        return 0;
+        long result = 0;
+        byte[] edgeDistances = getBitTillEdgeOfBoard(square);
+
+        long position = square + (9 * (Math.min(edgeDistances[0], edgeDistances[2])));
+        int diagonalLength = 8 - DIAGONAL_LENGTH_BY_POSITION[(int) position];
+        // First diagonal
+        for (int i = 0; i < diagonalLength; i++) {
+            long bitVal = extractBit(i, neDiagonalValue);
+            result |= bitVal << position;
+            position = position - 9;
+        }
+
+        // Second diagonal
+        position = square + (7 * (Math.min(edgeDistances[1], edgeDistances[2])));
+        diagonalLength = DIAGONAL_LENGTH_BY_POSITION[(int) position];
+        for (int i = 0; i < diagonalLength; i++) {
+            long bitVal = extractBit(i, nwDiagonalValue);
+            result |= bitVal << position;
+            position = position - 7;
+        }
+        return result;
+    }
+
+    // Extract the bit position from val, and put that bit in the most right position
+    private long extractBit(long position, long val) {
+        return (val & (1L << position)) >>> position;
     }
 
     // Given a square, an array of offsets and a long that represent the current board
     // Return a long with all the possible moves a piece with does offset can do on that board
     private long generateMovesLinePiece(byte square, byte[] offsetArray, long bitBoard) {
-        long positionBit = squareToBitboard(square), result = 0,temp;
+        long positionBit = squareToBitboard(square), result = 0, temp;
         byte[] edgeDistances = getBitTillEdgeOfBoard(square);
 
         for (byte i = 0; i < offsetArray.length; i++) {
@@ -156,8 +186,7 @@ public class BitBoardMoveGenerator {
         return result;
     }
 
-
-    // Given a position, return how many bits till the end of the board from the position to right, left, up, down
+    // Given a position, return how many bits till the end of the board from the position to left, right, up, down
     private byte[] getBitTillEdgeOfBoard(byte position) {
         byte[] distances = new byte[4];
         // Left
@@ -172,12 +201,11 @@ public class BitBoardMoveGenerator {
         return distances;
     }
 
-
     // Given an offset and a square, check if that offset from that square is not bigger than max dx dy
     // Also check if target y position in range
     private boolean dxDyCheck(long position, byte offset) {
         // Calculate the row and column of the given position, and of target position
-        long currX = position % 8, currY = position / 8, targetSquare = position+offset;
+        long currX = position % 8, currY = position / 8, targetSquare = position + offset;
         long targetX = (targetSquare) % 8, targetY = (targetSquare) / 8;
         // Calculate dx dy
         long dx = Math.abs(currX - targetX), dy = Math.abs(currY - targetY);
@@ -189,4 +217,5 @@ public class BitBoardMoveGenerator {
     private long squareToBitboard(long square) {
         return 1L << square;
     }
+
 }

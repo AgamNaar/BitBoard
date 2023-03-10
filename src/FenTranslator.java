@@ -2,7 +2,6 @@
 //TODO:  now just make from fen bitmaps
 
 public class FenTranslator {
-
     private static final String CLASSIC_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
     // FenType is the letter the piece represent - A/a depends on it color, lower case black
@@ -15,7 +14,7 @@ public class FenTranslator {
     private static final boolean WHITE = true;
     private static final int UPPER_CASE_OFFSET = 32;
 
-
+    @SuppressWarnings("unused")
     // Given a string that represent a FEN, set bitboards according to that string
     public void translateFen(BitBoards bitBoards, String fen) {
         getFenPieces(bitBoards, fen);
@@ -33,18 +32,15 @@ public class FenTranslator {
         int square = 63;
 
         // Run on the entire fen string
-        for (int i = 0; i < fen.length(); i++) {
-            char curr = fen.charAt(i);
-
+        for (char currChar : fen.toCharArray()) {
             // If it's a digit skip that amount of squares
-            if (Character.isDigit(curr))
-                square = square - Character.getNumericValue(curr);
-            else if (curr != '/') { // It's a piece, get its fen type, and if its upper case its white, lower is black
-                if (Character.isUpperCase(curr))
-                    createPieceFen(curr, square, WHITE, bitBoards);
+            if (Character.isDigit(currChar))
+                square = square - Character.getNumericValue(currChar);
+            else if (currChar != '/') { // It's a piece, get its fen type, and if its upper case its white, lower is black
+                if (Character.isUpperCase(currChar))
+                    createPieceFen(currChar, square, WHITE, bitBoards);
                 else
-                    createPieceFen(curr, square, !WHITE, bitBoards);
-
+                    createPieceFen(currChar, square, !WHITE, bitBoards);
                 square--;
             }
         }
@@ -52,6 +48,7 @@ public class FenTranslator {
 
     // Add the current piece to its co-responding bitboard, by type and color, according to its square
     private void createPieceFen(int fenType, int square, boolean color, BitBoards bitBoards) {
+        // Convert into bit position
         long bitPosition = squareToBitboard(square);
 
         if (color == WHITE) {
@@ -74,13 +71,12 @@ public class FenTranslator {
                 case PAWN -> bitBoards.setBlackPawns(bitBoards.getBlackPawns() | bitPosition);
             }
         }
-
-
     }
 
     // Convert position into bit position
     private long squareToBitboard(long square) {
         return 1L << square;
     }
+
 }
 

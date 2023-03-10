@@ -5,16 +5,9 @@ import java.awt.event.ActionListener;
 
 public class tempGui extends JFrame {
 
-
-    private BitBoards bitBoards;
-    private PieceMovement pieceMovement;
-
-    private JPanel panel;
-
-
-    private JButton[][] board;
-
-
+    private final BitBoards bitBoards;
+    private final PieceMovement pieceMovement;
+    private final JButton[][] board;
 
 
     public tempGui() {
@@ -33,13 +26,13 @@ public class tempGui extends JFrame {
         JPanel panel = new JPanel(new GridLayout(8, 8));
 
         // create the buttons, add them to the array and to the panel
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 7; row >= 0; row--) {
+            for (int col = 7; col >= 0; col--) {
                 board[row][col] = new JButton();
                 if ((row + col) % 2 == 0) {
-                    board[row][col].setBackground(Color.GRAY);
-                } else {
                     board[row][col].setBackground(Color.WHITE);
+                } else {
+                    board[row][col].setBackground(Color.GRAY);
                 }
                 board[row][col].addActionListener(new ButtonListener());
                 panel.add(board[row][col]);
@@ -73,19 +66,7 @@ public class tempGui extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new tempGui();
-            }
-        });
-    }
-
-    private int convRowAndColToSquare(int row, int col) {
-        return row * 8 + col;
-    }
-
-    private long convRowAndColToSquareBit(int row, int col) {
-        return (1L << (row * 8 + col));
+        SwingUtilities.invokeLater(tempGui::new);
     }
 
     private char squareToPiece(long square) {
@@ -125,7 +106,7 @@ public class tempGui extends JFrame {
         if ((square & bitBoards.getBlackPawns()) != 0)
             return 'p';
 
-        return ' ';
+        return 0;
     }
 
     private long squareToMoves(byte square, long bitSquare) {
@@ -165,13 +146,13 @@ public class tempGui extends JFrame {
         if ((bitSquare & bitBoards.getBlackPawns()) != 0)
             return pieceMovement.getPawnMovement(square, false);
 
-        return ' ';
+        return 0;
     }
 
 
     private void updateBoard() {
-        for (int row = 7; row >= 0; row--) {
-            for (int col = 7; col >= 0; col--) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
                 long square = (row * 8) + col;
                 long squarebit = 1L << square;
                 char piece = squareToPiece(squarebit);
@@ -186,21 +167,19 @@ public class tempGui extends JFrame {
         boolean[] map = new boolean[64];
         long mask = 1;
         for (int i = 0; i < 64; i++) {
-            if (((mask << i) & movement) != 0)
-                map[i] = true;
-            else
-                map[i] = false;
+            map[i] = ((mask << i) & movement) != 0;
         }
         return map;
     }
 
 
-    private void function(int CurrRow, int CurrCol) {
-        bitBoards.getWhitePawns();
+    private void function(int currRow, int curCol) {
 
-        long square = (CurrRow * 8) + CurrCol;
+        long square = (currRow * 8L) + curCol;
         long bitSquare = 1L << square;
-        long movement = squareToMoves((byte)square,bitSquare);
+        long movement = squareToMoves((byte) square, bitSquare);
+        System.out.println("row: "+currRow+" col: "+curCol);
+
         if (movement != 0) {
             boolean[] possibleMoves = convertLongMovementToArr(movement);
             for (int row = 0; row < 8; row++) {
@@ -211,7 +190,15 @@ public class tempGui extends JFrame {
                 }
             }
         }
+    }
 
+    // for testing, print long as 8x8 of it bits value
+    public static void print ( long toPrint){
+        String binaryString = String.format("%64s", Long.toBinaryString(toPrint)).replace(' ', '0');
+        for (int i = 0; i < 64; i += 8) {
+            System.out.println(binaryString.substring(i, i + 8));
+        }
+        System.out.println();
     }
 
 
