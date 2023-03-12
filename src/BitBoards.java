@@ -14,6 +14,11 @@ public class BitBoards {
     private long blackKnights;
     private long blackPawns;
 
+    // Given a color of a player (white = true, black = false), return as bitboards all the pieces of that color
+    public long allPiecesWithSameColor(boolean color) {
+        return color == BoardUtils.WHITE ? getWhitePieces() : getBlackPieces();
+    }
+
     // Return a long that represent a bitboard with all the white pieces
     public long getWhitePieces() {
         return (whiteKing | whiteQueens | whiteRooks | whiteKnights | whiteBishops | whitePawns);
