@@ -1,13 +1,17 @@
+import Pieces.*;
+import Utils.BoardUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
 
 public class tempGui extends JFrame {
 
-    private final BitBoards bitBoards;
-    private final PieceMovement pieceMovement;
+    private static final ChessGame game = new ChessGame();
     private final JButton[][] board;
+    private static final BoardUtils utils = new BoardUtils();
 
     int preRow = -1, preCol = -1;
     long preMoves = 0;
@@ -15,13 +19,6 @@ public class tempGui extends JFrame {
 
     public tempGui() {
         super("Grid of Buttons");
-
-        bitBoards = new BitBoards();
-        FenTranslator fenTranslator = new FenTranslator();
-        fenTranslator.translateFen(bitBoards);
-        pieceMovement = new PieceMovement(bitBoards);
-
-
         // create a 2D array of 64 buttons
         board = new JButton[8][8];
 
@@ -68,11 +65,6 @@ public class tempGui extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(tempGui::new);
-    }
-
-
     private void updateBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -81,14 +73,10 @@ public class tempGui extends JFrame {
                 } else {
                     board[row][col].setBackground(Color.GRAY);
                 }
-                long square = (row * 8) + col;
-                long squareBit = 1L << square;
-                char piece = squareToPiece(squareBit);
-                board[row][col].setText(piece + " ");
+                board[row][col].setText(" ");
             }
         }
-
-
+        addPieces();
     }
 
     private boolean[] convertLongMovementToArr(long movement) {
@@ -102,12 +90,10 @@ public class tempGui extends JFrame {
 
 
     private void function(int currRow, int curCol) {
-
         if (preCol == -1 && preRow == -1) {
             byte square = (byte) ((currRow * 8) + curCol);
-            long movement = pieceMovement.getMovesAsBitMap(square);
-            System.out.println("row: " + currRow + " col: " + curCol);
-
+            System.out.println(square);
+            long movement = game.getMovesAsBitBoards(square);
             if (movement != 0) {
                 boolean[] possibleMoves = convertLongMovementToArr(movement);
                 for (int row = 0; row < 8; row++) {
@@ -126,53 +112,56 @@ public class tempGui extends JFrame {
                 byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = (byte) ((preRow * 8) + preCol);
                 boolean[] possibleMoves = convertLongMovementToArr(preMoves);
                 if (possibleMoves[targetSquare]) {
-                    pieceMovement.executeMove(currentSquare, targetSquare);
+                    game.executeMove(currentSquare, targetSquare);
                 }
             }
-
             preCol = -1;
             preRow = -1;
             updateBoard();
         }
     }
 
-    private char squareToPiece(long square) {
-        if ((square & bitBoards.getWhiteKing()) != 0)
-            return 'K';
+    private void addPieces() {
+        LinkedList<Piece> pieceList = game.getPieceList();
+        for (Piece piece : pieceList) {
+            String pieceSymbol = "";
 
-        if ((square & bitBoards.getWhiteQueens()) != 0)
-            return 'Q';
+            if (piece.getColor() == BoardUtils.WHITE) {
+                if (piece instanceof King)
+                    pieceSymbol = "K";
+                if (piece instanceof Queen)
+                    pieceSymbol = "Q";
+                if (piece instanceof Rook)
+                    pieceSymbol = "R";
+                if (piece instanceof Bishop)
+                    pieceSymbol = "B";
+                if (piece instanceof Knight)
+                    pieceSymbol = "N";
+                if (piece instanceof Pawn)
+                    pieceSymbol = "P";
+            }
 
-        if ((square & bitBoards.getWhiteRooks()) != 0)
-            return 'R';
+            if (piece.getColor() == BoardUtils.BLACK) {
+                if (piece instanceof King)
+                    pieceSymbol = "k";
+                if (piece instanceof Queen)
+                    pieceSymbol = "q";
+                if (piece instanceof Rook)
+                    pieceSymbol = "r";
+                if (piece instanceof Bishop)
+                    pieceSymbol = "b";
+                if (piece instanceof Knight)
+                    pieceSymbol = "n";
+                if (piece instanceof Pawn)
+                    pieceSymbol = "p";
+            }
 
-        if ((square & bitBoards.getWhiteBishops()) != 0)
-            return 'B';
+            int row = utils.getRowOfSquare(piece.getSquare()), col = utils.getColOfSquare(piece.getSquare());
+            board[row][col].setText(pieceSymbol);
+        }
+    }
 
-        if ((square & bitBoards.getWhiteKnights()) != 0)
-            return 'N';
-
-        if ((square & bitBoards.getWhitePawns()) != 0)
-            return 'P';
-
-        if ((square & bitBoards.getBlackKing()) != 0)
-            return 'k';
-
-        if ((square & bitBoards.getBlackQueens()) != 0)
-            return 'q';
-
-        if ((square & bitBoards.getBlackRooks()) != 0)
-            return 'r';
-
-        if ((square & bitBoards.getBlackBishops()) != 0)
-            return 'b';
-
-        if ((square & bitBoards.getBlackKnights()) != 0)
-            return 'n';
-
-        if ((square & bitBoards.getBlackPawns()) != 0)
-            return 'p';
-
-        return 0;
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(tempGui::new);
     }
 }

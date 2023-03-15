@@ -28,4 +28,13 @@ public class BoardUtils {
     public long getSquarePositionAsBitboardPosition(long square) {
         return 1L << square;
     }
+
+    // for testing, print long as 8x8 of it bits value
+    public void print ( long toPrint){
+        String binaryString = String.format("%64s", Long.toBinaryString(toPrint)).replace(' ', '0');
+        for (int i = 0; i < 64; i += 8) {
+            System.out.println(binaryString.substring(i, i + 8));
+        }
+        System.out.println();
+    }
 }

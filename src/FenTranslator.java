@@ -155,7 +155,7 @@ public class FenTranslator {
         return blackLongCastle;
     }
 
-    public long getEnPassantSquareToCapture() {
+    public byte getEnPassantSquareToCapture() {
         return enPassantTargetSquare;
     }
 
