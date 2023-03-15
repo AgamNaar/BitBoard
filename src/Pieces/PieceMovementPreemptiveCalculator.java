@@ -1,10 +1,17 @@
+package Pieces;
+
+import Utils.BoardUtils;
+
 import java.util.HashMap;
 
-// This class is responsible, to generate for each piece, for each square on the board (0-63)
-// All the possible moves it can do - regardless of the position of the board
-// For each piece it returns an array of 64, each position has a bitboard of the move co-responding for that position
-public class BitBoardMoveGenerator {
+// This class is responsible to generate for each piece, for each square on the board (0-63), to preemptively calculate the moves it can do
+// For line pieces - their moves depend on the pieces on their moving line, so it calculates for each square all the possible combination
+// Save it on a 64 array of hashmap, each cell of the array is a square, and for each hashmap the key for the movement is the mask value of the pieces on the movement line
+// For none line pieces - simply calculate for each square what are the possible movements and save it on an array
+// The movement is represented as a bitboard
+public class PieceMovementPreemptiveCalculator {
 
+    // Movement offset for each piece
     private static final byte[] KING_OFFSETS = {-9, -8, -7, -1, 1, 7, 8, 9};
     private static final byte[] ROOK_OFFSETS = {1, -1, 8, -8};
     private static final byte[] BISHOP_OFFSETS = {7, -7, 9, -9};
@@ -203,7 +210,7 @@ public class BitBoardMoveGenerator {
     // Also check if target y position in range
     private boolean dxDyCheck(byte square, byte offset) {
         // Calculate the row and column of the given position, and of target position
-        byte targetSquare = (byte)(square + offset);
+        byte targetSquare = (byte) (square + offset);
         int currX = utils.getColOfSquare(square), currY = utils.getRowOfSquare(square);
         int targetX = utils.getColOfSquare(targetSquare), targetY = utils.getRowOfSquare(targetSquare);
         // Calculate dx dy
