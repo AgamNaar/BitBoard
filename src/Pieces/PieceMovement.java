@@ -2,13 +2,14 @@ package Pieces;
 
 import Utils.BoardUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 // Class that provide movement for pieces given their position, and bitboards that represent the state of the board
 public class PieceMovement {
     private static final long[] KING_MOVES = new long[BoardUtils.BOARD_SIZE];
-    private static final HashMap<Long, Long>[] ROOK_MOVES = (HashMap<Long, Long>[]) new HashMap<?, ?>[BoardUtils.BOARD_SIZE];
-    private static final HashMap<Long, Long>[] BISHOP_MOVES = (HashMap<Long, Long>[]) new HashMap<?, ?>[BoardUtils.BOARD_SIZE];
+    private static final ArrayList<HashMap<Long, Long>> ROOK_MOVES = new ArrayList<>();
+    private static final ArrayList<HashMap<Long, Long>> BISHOP_MOVES = new ArrayList<>();
     private static final long[] KNIGHT_MOVES = new long[BoardUtils.BOARD_SIZE];
     private static final long[] WHITE_PAWN_ONLY_MOVES = new long[BoardUtils.BOARD_SIZE];
     private static final long[] WHITE_PAWN_CAPTURE = new long[BoardUtils.BOARD_SIZE];
@@ -20,8 +21,8 @@ public class PieceMovement {
     // precalculate all the moves a piece can do , on each square, using the PieceMovementPreemptiveCalculator class
     public PieceMovement() {
         for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
-            ROOK_MOVES[i] = new HashMap<>();
-            BISHOP_MOVES[i] = new HashMap<>();
+            ROOK_MOVES.add(new HashMap<>());
+            BISHOP_MOVES.add(new HashMap<>());
         }
         PieceMovementPreemptiveCalculator generator = new PieceMovementPreemptiveCalculator();
         generator.generateKingMoves(KING_MOVES);
@@ -52,7 +53,7 @@ public class PieceMovement {
     public long getRookMovement(byte position, long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = ROOK_MASK[position] & allPiecesBitBoard;
-        long moves = ROOK_MOVES[position].get(keyVal);
+        long moves = ROOK_MOVES.get(position).get(keyVal);
         return moves & ~allSameColorPiecesBitBoard;
     }
 
@@ -61,7 +62,7 @@ public class PieceMovement {
     public long getBishopMovement(byte position, long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = BISHOP_MASK[position] & allPiecesBitBoard;
-        long moves = BISHOP_MOVES[position].get(keyVal);
+        long moves = BISHOP_MOVES.get(position).get(keyVal);
         return moves & ~allSameColorPiecesBitBoard;
     }
 
@@ -80,5 +81,10 @@ public class PieceMovement {
             return ((WHITE_PAWN_CAPTURE[position] & enemyPieceBitBoard)) | ((WHITE_PAWN_ONLY_MOVES[position] & ~allPiecesBitBoard));
         else
             return ((BLACK_PAWN_CAPTURE[position] & enemyPieceBitBoard)) | ((BLACK_PAWN_ONLY_MOVES[position] & ~allPiecesBitBoard));
+    }
+
+    // Given a color and a square, return the capture moves that pawn color in that square can do
+    public long getPawnCaptureSquare(boolean color, byte square) {
+        return color ? WHITE_PAWN_CAPTURE[square] : BLACK_PAWN_CAPTURE[square];
     }
 }

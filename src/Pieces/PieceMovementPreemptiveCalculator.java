@@ -2,6 +2,7 @@ package Pieces;
 
 import Utils.BoardUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 // This class is responsible to generate for each piece, for each square on the board (0-63), to preemptively calculate the moves it can do
@@ -31,7 +32,7 @@ public class PieceMovementPreemptiveCalculator {
 
     // Change rook/bishop moves that, in each cell of the array, there is a hashmap that has the bitBoard movement for each row+column or diagonal
     // The value of row+column or diagonal is the key to that value of bitBoard movement
-    public void generateLinePieceMoves(HashMap<Long, Long>[] rookMoves, HashMap<Long, Long>[] bishopMoves) {
+    public void generateLinePieceMoves(ArrayList<HashMap<Long, Long>> rookMoves, ArrayList<HashMap<Long, Long>> bishopMoves) {
         generateAllMovesLinePiece(rookMoves, bishopMoves);
     }
 
@@ -96,7 +97,7 @@ public class PieceMovementPreemptiveCalculator {
     }
 
     // Generate moves for each square of the board for line pieces (Rook, Bishop)
-    private void generateAllMovesLinePiece(HashMap<Long, Long>[] moveArrayRook, HashMap<Long, Long>[] moveArrayBishop) {
+    private void generateAllMovesLinePiece(ArrayList<HashMap<Long, Long>> moveListRook, ArrayList<HashMap<Long, Long>> moveListBishop) {
         // For each square, for each possible values of rows and columns, get the bitboard value
         for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++) {
             for (int rowValue = 0; rowValue < 256; rowValue++) {
@@ -105,8 +106,8 @@ public class PieceMovementPreemptiveCalculator {
                     long bishopMap = toBitMapBishop(square, rowValue, columnValue);
                     long movesRook = generateMovesLinePiece(square, ROOK_OFFSETS, rookMap, getDistanceTillEdgeOfBoard(square));
                     long movesBishop = generateMovesLinePiece(square, BISHOP_OFFSETS, bishopMap, getDistanceTillEdgeOfBoardBishop(square));
-                    moveArrayRook[square].put(rookMap, movesRook);
-                    moveArrayBishop[square].put(bishopMap, movesBishop);
+                    moveListRook.get(square).put(rookMap, movesRook);
+                    moveListBishop.get(square).put(bishopMap, movesBishop);
                 }
             }
         }

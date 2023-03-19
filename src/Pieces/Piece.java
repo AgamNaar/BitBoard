@@ -31,4 +31,8 @@ public abstract class Piece {
     public boolean getColor() {
         return color;
     }
+
+    public PieceMovement getPieceMovement() {
+        return pieceMovement;
+    }
 }
