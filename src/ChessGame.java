@@ -1,5 +1,4 @@
 import Pieces.King;
-import Pieces.Pawn;
 import Pieces.Piece;
 import Utils.BoardUtils;
 
@@ -10,8 +9,8 @@ public class ChessGame {
     private boolean colorOfPlayersTurn;
     private LinkedList<Piece> pieceList;
     private final Piece[] pieceBoard = new Piece[BoardUtils.BOARD_SIZE];
-    private long whitePiecesBitBoard;
-    private long blackPiecesBitBoard;
+    private long playerTurnPiecesBitBoard;
+    private long allPiecesBitBoard;
 
     private static final BoardUtils boardUtils = new BoardUtils();
     private SpecialMovesHandler specialMovesHandler;
@@ -51,38 +50,40 @@ public class ChessGame {
             pieceBoard[piece.getSquare()] = piece;
     }
 
-    // Set up the value of the white/black pieces bitboards from the piece list
+    // update the value of allPiecesBitBoard and playerTurnPiecesBitBoard according to the piece list
     private void updateBitBoards() {
-        whitePiecesBitBoard = 0;
-        blackPiecesBitBoard = 0;
-        // For each piece, add its position to its appropriate board according to its color
+        allPiecesBitBoard = 0;
+        playerTurnPiecesBitBoard = 0;
+        // For each piece, add its position to its appropriate board
         for (Piece piece : pieceList) {
-            long currentBitBoard = boardUtils.getSquarePositionAsBitboardPosition(piece.getSquare());
-            if (piece.getColor() == BoardUtils.WHITE)
-                whitePiecesBitBoard |= currentBitBoard;
-            else
-                blackPiecesBitBoard |= currentBitBoard;
+            long pieceBitBoardPosition = boardUtils.getSquarePositionAsBitboardPosition(piece.getSquare());
+            if (piece.getColor() == colorOfPlayersTurn)
+                playerTurnPiecesBitBoard |= pieceBitBoardPosition;
+
+            allPiecesBitBoard |= pieceBitBoardPosition;
         }
     }
 
     // Execute a move of a piece that its in the initial square, to the target square
     public void executeMove(byte currentSquare, byte targetSquare) {
-        Piece pieceToRemove = pieceBoard[targetSquare];
+        // TODO: still under work
         Piece pieceToMove = pieceBoard[currentSquare];
+        if (specialMovesHandler.isSpecialMove(targetSquare)) {
+            specialMovesHandler.executeSpecialMove(currentSquare,targetSquare,pieceList,pieceBoard);
+        } else {
+            Piece pieceToRemove = pieceBoard[targetSquare];
+            // Update the position of the piece
+            pieceToMove.setSquare(targetSquare);
+            pieceBoard[targetSquare] = pieceToMove;
 
-        // Update the position of the piece
-        pieceToMove.setSquare(targetSquare);
-        pieceBoard[targetSquare] = pieceToMove;
-
-        // Remove the piece on the target square and remove from the board the piece from the previous position
-        pieceBoard[currentSquare] = pieceToRemove;
-        pieceList.remove(pieceToRemove);
-
+            // Remove the piece on the target square and remove from the board the piece from the previous position
+            pieceBoard[currentSquare] = pieceToRemove;
+            pieceList.remove(pieceToRemove);
+        }
         // Change the turn of the player, update bitboards and the special moves
-        updateBitBoards();
         colorOfPlayersTurn = !colorOfPlayersTurn;
-        specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
-
+        specialMovesHandler.updateSpecialMoves(targetSquare, pieceToMove);
+        updateBitBoards();
         afterTurnCheck();
     }
 
@@ -96,8 +97,13 @@ public class ChessGame {
                 System.out.println("check");
         } else {
             if (getPlayerMoves(colorOfPlayersTurn) == 0)
-            System.out.println("draw");
+                System.out.println("draw");
         }
+    }
+
+    // If player has no moves to do and checked, he is checkmated
+    private boolean isPlayerCheckMated(boolean playerColor) {
+        return getPlayerMoves(playerColor) == 0;
     }
 
     // Given a color of a player, check if their king is checked, if yes return true
@@ -112,54 +118,6 @@ public class ChessGame {
         return (kingBitPosition & enemyMovement) != 0;
     }
 
-    // If player has no moves to do and checked, he is checkmated
-    private boolean isPlayerCheckMated(boolean playerColor) {
-        return getPlayerMoves(playerColor) == 0;
-    }
-
-    // Given a color of a player, return as bitboard all the moves it pieces can do
-    private long getPlayerMoves(boolean playerColor) {
-        long movementBitBoard = 0, allPiecesBitBoard = whitePiecesBitBoard | blackPiecesBitBoard;
-        long playerPiecesBitBoard = getBitBoardByColor(playerColor);
-
-        // For each piece in piece list, added the movement of pieces with same color as player
-        for (Piece piece : pieceList)
-            if (piece.getColor() == playerColor)
-                movementBitBoard = movementBitBoard | piece.getMovesAsBitBoard(allPiecesBitBoard, playerPiecesBitBoard);
-
-        return removeIllegalMoves(movementBitBoard, playerColor);
-    }
-
-    // Given a square, get all the legal moves that piece can do as bitboard
-    public long getMovesAsBitBoards(byte square) {
-        long sameColorPieceBitBoard = getBitBoardByColor(colorOfPlayersTurn),basicMoves,specialMoves;
-        Piece piece = pieceBoard[square];
-
-        // Check if there is a piece on that square, and is the same color as the player who's playing
-        if (piece != null && colorOfPlayersTurn == piece.getColor()) {
-            basicMoves = piece.getMovesAsBitBoard(whitePiecesBitBoard | blackPiecesBitBoard, sameColorPieceBitBoard);
-            // if it's a pawn or a king check if it can do a special move, either way remove illegal moves
-            if (piece instanceof King || piece instanceof Pawn) {
-                specialMoves = specialMovesHandler.getSpecialMoves(square,piece);
-                return removeIllegalMoves(specialMoves | basicMoves,colorOfPlayersTurn);
-            }
-            else
-                return removeIllegalMoves(basicMoves, colorOfPlayersTurn);
-        }
-        return 0;
-    }
-
-    // Receive a bitboard of moves, return a bitboard with only the legal moves
-    // Moving a piece won't case a check, and if checked will stop the check
-    private long removeIllegalMoves(long moves, boolean playerColor) {
-        return 0;
-    }
-
-    // Given player color, return his co-responding bitboard that represent his pieces positions
-    private long getBitBoardByColor(boolean playerColor) {
-        return playerColor ? whitePiecesBitBoard : blackPiecesBitBoard;
-    }
-
     // Return the king with same color as player color
     private Piece getKing(boolean playerColor) {
         for (Piece piece : pieceList)
@@ -168,6 +126,32 @@ public class ChessGame {
 
         // there is always a king, but for compiler
         return null;
+    }
+
+    // Given a color of a player, return as bitboard all the moves it pieces can do
+    private long getPlayerMoves(boolean playerColor) {
+        long movementBitBoard = 0;
+        // if the player color to get his movement is not the same as the play turn, remove from all allPiecesBitBoard all the same color pieces
+        long sameColorPieceBitBoard = colorOfPlayersTurn == playerColor ? playerTurnPiecesBitBoard : allPiecesBitBoard & ~playerTurnPiecesBitBoard;
+        // For each piece in piece list, added the movement of pieces with same color as player
+        for (Piece piece : pieceList)
+            if (piece.getColor() == playerColor)
+                movementBitBoard |= piece.getMovesAsBitBoard(allPiecesBitBoard, sameColorPieceBitBoard);
+
+        return movementBitBoard;
+    }
+
+    // Given a square, get all the legal moves that piece can do as bitboard
+    public long getMovesAsBitBoards(byte square) {
+        Piece piece = pieceBoard[square];
+        // Check if there is a piece on that square, and is the same color as the player who's playing
+        if (piece != null && colorOfPlayersTurn == piece.getColor()) {
+            long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
+            long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerMoves(!colorOfPlayersTurn), allPiecesBitBoard);
+            // TODO: check legal moves (i.e moving a piece wont cuz king to be checked)
+            return pieceMoves | specialMoves;
+        }
+        return 0;
     }
 
     public LinkedList<Piece> getPieceList() {
