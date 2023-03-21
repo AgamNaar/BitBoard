@@ -30,6 +30,8 @@ public class SpecialMovesHandler {
     private static final long LONG_CASTLE_SHOULD_BE_EMPTY_SQUARE_BITBOARD = 0b01110000;
     private static final long LONG_CASTLING_SQUARE_BITBOARD = 0b100000;
     private static final int BLACK_CASTLING_SQUARE_OFFSET = 56;
+    private static final byte SHORT_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE = 1;
+    private static final byte LONG_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE = -1;
 
     private static final long WHITE_SHORT_CASTLE_SQUARE = 1;
     private static final long WHITE_LONG_CASTLE_SQUARE = 5;
@@ -49,9 +51,8 @@ public class SpecialMovesHandler {
         this.enPassantTargetSquare = enPassantTargetSquare;
     }
 
-    // Given a piece that has been played,  the square it has moved to, update the special moves accordingly
-    public void updateSpecialMoves(byte targetSquare, Piece pieceToMove) {
-        byte currentSquare = pieceToMove.getSquare();
+    // Given a piece that has been played, the square it has moved to, update the special moves accordingly
+    public void updateSpecialMoves(byte currentSquare, byte targetSquare, Piece pieceToMove) {
         updateCastling(currentSquare, pieceToMove);
         updateEnPassant(currentSquare, targetSquare, pieceToMove);
     }
@@ -70,7 +71,7 @@ public class SpecialMovesHandler {
     // Execute the special to target square according to the piece and the square, update the board and list accordingly
     public void executeSpecialMove(byte currentSquare, byte targetSquare, LinkedList<Piece> pieceList, Piece[] pieceBoard) {
         if (pieceBoard[currentSquare] instanceof King)
-            executeCastling(currentSquare, targetSquare, pieceBoard);
+            executeCastling(currentSquare, targetSquare, pieceBoard, pieceList);
         else
             executeEnPassant(currentSquare, targetSquare, pieceBoard, pieceList);
     }
@@ -86,8 +87,8 @@ public class SpecialMovesHandler {
     private void updateEnPassant(byte currentSquare, byte targetSquare, Piece pieceToMove) {
         // If a pawn has moved, check if it moved 2 squares, meaning enemy pawn can take it using en passant
         if (pieceToMove instanceof Pawn) {
+            // The target square is a square backwards from where it moved, if its white its -8 from its position if black +8
             if (Math.abs(targetSquare - currentSquare) == 16)
-                // The target square is a square backwards from where it moved, if its white its -8 from its position if black +8
                 enPassantTargetSquare = (byte) ((targetSquare - currentSquare > 0) ? currentSquare + 8 : currentSquare - 8);
             else
                 enPassantTargetSquare = NO_EN_PASSANT_TARGET_SQUARE;
@@ -162,30 +163,31 @@ public class SpecialMovesHandler {
 
     // Given a current square, target square, update pieceBoard and piece square position according to the castling that need to be done
     // Short/long castling, and of which color
-    private void executeCastling(byte currentSquare, byte targetSquare, Piece[] pieceBoard) {
+    private void executeCastling(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
         Piece king = pieceBoard[currentSquare];
-        // If target square is larger than current square, it's a long castling, according to castling get the right rook position
-        byte rookPosition = targetSquare > currentSquare ? BoardUtils.INITIAL_WHITE_ROOK_SQUARE_LONG : BoardUtils.INITIAL_WHITE_ROOK_SQUARE_SHORT;
-        // According to the castling type, get the offset for the target square
-        int rookTargetSquareOffset = targetSquare > currentSquare ? -1 : 1;
-        // Check if to a need to add offset
+        int rookPosition, rookTargetPosition;
+        // If current square (the king position) is larger than his target square, its short castling
+        if (currentSquare > targetSquare) {
+            rookPosition = BoardUtils.INITIAL_WHITE_ROOK_SQUARE_SHORT;
+            rookTargetPosition = targetSquare + SHORT_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE;
+        } else {
+            rookPosition = BoardUtils.INITIAL_WHITE_ROOK_SQUARE_LONG;
+            rookTargetPosition = targetSquare + LONG_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE;
+        }
+        // Check if you need to add an offset, rook position is white rook position so if black need to add offset
         int offset = king.getColor() ? 0 : BLACK_CASTLING_SQUARE_OFFSET;
-        Piece rookToMove = pieceBoard[rookPosition + offset];
 
-        // Update the position of the king
-        king.setSquare(targetSquare);
-        pieceBoard[targetSquare] = king;
-        //TODO: better way to clean previous king cell in the board array
-        pieceBoard[currentSquare] = pieceBoard[currentSquare - rookTargetSquareOffset];
-
-        // Update the position of the rook,
-        rookToMove.setSquare((byte) (targetSquare + rookTargetSquareOffset));
-        pieceBoard[targetSquare + rookTargetSquareOffset] = rookToMove;
-        //TODO: better way to clean previous rook cell in the board array
-        pieceBoard[rookPosition + offset] = pieceBoard[currentSquare];
+        utils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
+        utils.updatePiecePosition((byte) rookTargetPosition, (byte) (rookPosition + offset), pieceBoard, pieceList);
     }
 
+    // Given the current square of the pawn who do en passant to target square, execute the move
     private void executeEnPassant(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
-        //TODO: finish
+        // The target en passant square + 1 square in the direction the pawn went, is where pawn is now
+        byte enPassantPawnToCaptureSquare = (byte) (targetSquare + (pieceBoard[currentSquare].getColor() ? BoardUtils.BLACK_PAWN_MOVE_OFFSET : BoardUtils.WHITE_PAWN_MOVE_OFFSET));
+        utils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
+        // Remove the captured pawn from list and board
+        pieceList.remove(pieceBoard[enPassantPawnToCaptureSquare]);
+        pieceBoard[enPassantPawnToCaptureSquare] = null;
     }
 }

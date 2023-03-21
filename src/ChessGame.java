@@ -69,20 +69,13 @@ public class ChessGame {
         // TODO: still under work
         Piece pieceToMove = pieceBoard[currentSquare];
         if (specialMovesHandler.isSpecialMove(targetSquare)) {
-            specialMovesHandler.executeSpecialMove(currentSquare,targetSquare,pieceList,pieceBoard);
-        } else {
-            Piece pieceToRemove = pieceBoard[targetSquare];
-            // Update the position of the piece
-            pieceToMove.setSquare(targetSquare);
-            pieceBoard[targetSquare] = pieceToMove;
+            specialMovesHandler.executeSpecialMove(currentSquare, targetSquare, pieceList, pieceBoard);
+        } else
+            boardUtils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
 
-            // Remove the piece on the target square and remove from the board the piece from the previous position
-            pieceBoard[currentSquare] = pieceToRemove;
-            pieceList.remove(pieceToRemove);
-        }
         // Change the turn of the player, update bitboards and the special moves
         colorOfPlayersTurn = !colorOfPlayersTurn;
-        specialMovesHandler.updateSpecialMoves(targetSquare, pieceToMove);
+        specialMovesHandler.updateSpecialMoves(targetSquare, currentSquare,pieceToMove);
         updateBitBoards();
         afterTurnCheck();
     }
