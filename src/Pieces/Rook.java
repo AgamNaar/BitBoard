@@ -7,12 +7,12 @@ public class Rook extends LinePiece {
     }
 
     @Override
-    public long getTreatLines(Piece enemyKing, Long boardBitBoard) {
-        return getTreatLinesRook(enemyKing, boardBitBoard);
+    public long getTreatLines(byte enemyKingSquare, Long boardBitBoard) {
+        return threateningLine.getRookThreateningLine(getSquare(), enemyKingSquare, boardBitBoard);
     }
 
     @Override
-    public long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
-        return pieceMovement.getRookMovement(getSquare(), allPiecesBitBoard, allSameColorPiecesBitBoard);
+    public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
+        return pieceMovement.getRookMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }
 }

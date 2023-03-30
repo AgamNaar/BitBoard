@@ -7,12 +7,12 @@ public class Bishop extends LinePiece {
     }
 
     @Override
-    public long getTreatLines(Piece enemyKing, Long boardBitBoard) {
-        return getTreatLinesBishop(enemyKing, boardBitBoard);
+    public long getTreatLines(byte enemyKingSquare, Long boardBitBoard) {
+        return threateningLine.getBishopThreateningLine(getSquare(), enemyKingSquare, boardBitBoard);
     }
 
     @Override
-    public long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
-        return pieceMovement.getBishopMovement(getSquare(), allPiecesBitBoard, allSameColorPiecesBitBoard);
+    public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
+        return pieceMovement.getBishopMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }
 }

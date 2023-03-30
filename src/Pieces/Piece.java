@@ -20,8 +20,7 @@ public abstract class Piece {
 
     // Abstract method, given bitboard of all pieces on the board and bitboard of only same color piece
     // Return bitboard of all the move the piece can do (without checking if It's legal or not)
-    public abstract long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard);
-
+    public abstract long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard);
 
     // Return the position of the piece as bitboard
     public long getSquareAsBitBoard() {

@@ -7,8 +7,8 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
-        long enemyPiecesBitBoards = allPiecesBitBoard & ~allSameColorPiecesBitBoard;
+    public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
+        long enemyPiecesBitBoards = allPiecesBitBoard & ~sameColorPiecesBitBoard;
         return pieceMovement.getPawnMovement(getSquare(), getColor(), allPiecesBitBoard, enemyPiecesBitBoards);
     }
 }

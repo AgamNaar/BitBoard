@@ -7,12 +7,12 @@ public class Queen extends LinePiece {
     }
 
     @Override
-    public long getTreatLines(Piece enemyKing, Long boardBitBoard) {
-        return getTreatLinesBishop(enemyKing, boardBitBoard) & getTreatLinesRook(enemyKing, boardBitBoard);
+    public long getTreatLines(byte enemyKingSquare, Long boardBitBoard) {
+        return threateningLine.getQueenThreateningLine(getSquare(), enemyKingSquare, boardBitBoard);
     }
 
     @Override
-    public long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
-        return pieceMovement.getQueenMovement(getSquare(), allPiecesBitBoard, allSameColorPiecesBitBoard);
+    public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
+        return pieceMovement.getQueenMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }
 }

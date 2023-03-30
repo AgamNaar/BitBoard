@@ -7,7 +7,7 @@ public class Knight extends Piece {
     }
 
     @Override
-    public long getMovesAsBitBoard(long allPiecesBitBoard, long allSameColorPiecesBitBoard) {
-        return pieceMovement.getKnightMovement(getSquare(), allSameColorPiecesBitBoard);
+    public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
+        return pieceMovement.getKnightMovement(getSquare(), sameColorPiecesBitBoard);
     }
 }
