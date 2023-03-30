@@ -4,8 +4,9 @@ import Utils.BoardUtils;
 import java.util.LinkedList;
 
 /*
- Class that given a fen (Forsyth-Edwards Notation), a string that represent a game of chess
- translate it and extract all the info from it, the info:
+Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game.
+The purpose of FEN is to provide all the necessary information to restart a game from a particular position
+ Class that given a fen, represented as a string, translate it and extract all the info from it, the info:
  1. board set up - save as a list
  2. player turn - save as boolean, true meaning white turn
  3. castling rights - save as a boolean for each castling
@@ -49,7 +50,6 @@ public class FenTranslator {
         translateFen();
     }
 
-    @SuppressWarnings("unused")
     // Builder that use a string (assume that its valid fen)
     public FenTranslator(String fenStringValue) {
         this.fenStringValue = fenStringValue;
@@ -72,7 +72,7 @@ public class FenTranslator {
             // Convert chess square (i.e c3,a4...), to number square
             int column = fenStringValue.charAt(indexPosition++) - 'h';
             int row = Character.getNumericValue(fenStringValue.charAt(indexPosition));
-            enPassantTargetSquare = (byte) (column + (row * 8));
+            enPassantTargetSquare = (byte) (column + (row * BoardUtils.BOARD_EDGE_SIZE));
         }
     }
 

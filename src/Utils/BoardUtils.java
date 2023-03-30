@@ -11,13 +11,6 @@ public class BoardUtils {
     public static final int BOARD_SIZE = 64;
     public static final int BOARD_EDGE_SIZE = 8;
 
-    public static final byte INITIAL_WHITE_KING_SQUARE = 3;
-    public static final byte INITIAL_BLACK_KING_SQUARE = 59;
-    public static final byte INITIAL_WHITE_ROOK_SQUARE_SHORT = 0;
-    public static final byte INITIAL_WHITE_ROOK_SQUARE_LONG = 7;
-    public static final byte INITIAL_BLACK_ROOK_SQUARE_SHORT = 56;
-    public static final byte INITIAL_BLACK_ROOK_SQUARE_LONG = 63;
-
     public static final byte WHITE_PAWN_MOVE_OFFSET = 8;
     public static final byte BLACK_PAWN_MOVE_OFFSET = -8;
 

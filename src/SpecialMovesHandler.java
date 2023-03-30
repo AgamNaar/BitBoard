@@ -6,6 +6,10 @@ import Utils.BoardUtils;
 
 import java.util.LinkedList;
 
+import static Utils.BoardUtils.BLACK_PAWN_MOVE_OFFSET;
+import static Utils.BoardUtils.WHITE_PAWN_MOVE_OFFSET;
+
+// TODO: add pawn promotion
 /*
 Class that handle all the special moves in a game, Special moves are castling and en passant
 has 4 public functions:
@@ -17,11 +21,21 @@ execute the special move and update the list and board of pieces - assume that t
 4.  isSpecialMove: Given a target square, check if it's a square of castling or en passant move - if yes return true
  */
 public class SpecialMovesHandler {
+
     private boolean whiteShortCastle;
     private boolean whiteLongCastle;
     private boolean blackShortCastle;
     private boolean blackLongCastle;
     private byte enPassantTargetSquare;
+
+    private static final int PAWN_DOUBLE_MOVE_OFFSET = 16;
+
+    public static final byte INITIAL_WHITE_KING_SQUARE = 3;
+    public static final byte INITIAL_BLACK_KING_SQUARE = 59;
+    public static final byte INITIAL_WHITE_ROOK_SQUARE_SHORT = 0;
+    public static final byte INITIAL_WHITE_ROOK_SQUARE_LONG = 7;
+    public static final byte INITIAL_BLACK_ROOK_SQUARE_SHORT = 56;
+    public static final byte INITIAL_BLACK_ROOK_SQUARE_LONG = 63;
 
     private static final long SHORT_CASTLE_SHOULD_BE_NOT_ATTACKED_SQUARE_BITBOARD = 0b1111;
     private static final long SHORT_CASTLE_SHOULD_BE_EMPTY_SQUARE_BITBOARD = 0b0110;
@@ -77,10 +91,17 @@ public class SpecialMovesHandler {
     }
 
     // Return whatever or not if target square is a special move square, meaning moving there is castling or en passant move
-    public boolean isSpecialMove(byte targetSquare) {
-        return targetSquare == WHITE_LONG_CASTLE_SQUARE || targetSquare == WHITE_SHORT_CASTLE_SQUARE
-                || targetSquare == BLACK_LONG_CASTLE_SQUARE || targetSquare == BLACK_SHORT_CASTLE_SQUARE
-                || targetSquare == enPassantTargetSquare;
+    public boolean isSpecialMove(byte targetSquare, Piece pieceToMove) {
+        if (pieceToMove instanceof Pawn)
+            return targetSquare == enPassantTargetSquare;
+
+        if (pieceToMove instanceof King)
+            return (targetSquare == WHITE_SHORT_CASTLE_SQUARE && whiteShortCastle) ||
+                    (targetSquare == WHITE_LONG_CASTLE_SQUARE && whiteLongCastle) ||
+                    (targetSquare == BLACK_SHORT_CASTLE_SQUARE && blackShortCastle) ||
+                    (targetSquare == BLACK_LONG_CASTLE_SQUARE && blackLongCastle);
+
+        return false;
     }
 
     // Update the en passant target square
@@ -88,8 +109,8 @@ public class SpecialMovesHandler {
         // If a pawn has moved, check if it moved 2 squares, meaning enemy pawn can take it using en passant
         if (pieceToMove instanceof Pawn) {
             // The target square is a square backwards from where it moved, if its white its -8 from its position if black +8
-            if (Math.abs(targetSquare - currentSquare) == 16)
-                enPassantTargetSquare = (byte) ((targetSquare - currentSquare > 0) ? currentSquare + 8 : currentSquare - 8);
+            if (Math.abs(targetSquare - currentSquare) == PAWN_DOUBLE_MOVE_OFFSET)
+                enPassantTargetSquare = (byte) ((targetSquare - currentSquare > 0) ? currentSquare + WHITE_PAWN_MOVE_OFFSET : currentSquare + BLACK_PAWN_MOVE_OFFSET);
             else
                 enPassantTargetSquare = NO_EN_PASSANT_TARGET_SQUARE;
         } else
@@ -101,21 +122,20 @@ public class SpecialMovesHandler {
         // If a rook moved from its initial position, disable that rook side castling
         if (pieceToMove instanceof Rook) {
             switch (currentSquare) {
-                case BoardUtils.INITIAL_WHITE_ROOK_SQUARE_SHORT -> whiteShortCastle = false;
-                case BoardUtils.INITIAL_WHITE_ROOK_SQUARE_LONG -> whiteLongCastle = false;
-                case BoardUtils.INITIAL_BLACK_ROOK_SQUARE_SHORT -> blackShortCastle = false;
-                case BoardUtils.INITIAL_BLACK_ROOK_SQUARE_LONG -> blackLongCastle = false;
+                case INITIAL_WHITE_ROOK_SQUARE_SHORT -> whiteShortCastle = false;
+                case INITIAL_WHITE_ROOK_SQUARE_LONG -> whiteLongCastle = false;
+                case INITIAL_BLACK_ROOK_SQUARE_SHORT -> blackShortCastle = false;
+                case INITIAL_BLACK_ROOK_SQUARE_LONG -> blackLongCastle = false;
             }
         }
 
         // If the king move, disable all of its castling right
         if (pieceToMove instanceof King) {
-            if (currentSquare == BoardUtils.INITIAL_WHITE_KING_SQUARE) {
+            if (currentSquare == INITIAL_WHITE_KING_SQUARE) {
                 whiteShortCastle = false;
                 whiteLongCastle = false;
             }
-
-            if (currentSquare == BoardUtils.INITIAL_BLACK_KING_SQUARE) {
+            if (currentSquare == INITIAL_BLACK_KING_SQUARE) {
                 blackShortCastle = false;
                 blackLongCastle = false;
             }
@@ -168,10 +188,10 @@ public class SpecialMovesHandler {
         int rookPosition, rookTargetPosition;
         // If current square (the king position) is larger than his target square, its short castling
         if (currentSquare > targetSquare) {
-            rookPosition = BoardUtils.INITIAL_WHITE_ROOK_SQUARE_SHORT;
+            rookPosition = INITIAL_WHITE_ROOK_SQUARE_SHORT;
             rookTargetPosition = targetSquare + SHORT_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE;
         } else {
-            rookPosition = BoardUtils.INITIAL_WHITE_ROOK_SQUARE_LONG;
+            rookPosition = INITIAL_WHITE_ROOK_SQUARE_LONG;
             rookTargetPosition = targetSquare + LONG_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE;
         }
         // Check if you need to add an offset, rook position is white rook position so if black need to add offset
@@ -184,7 +204,7 @@ public class SpecialMovesHandler {
     // Given the current square of the pawn who do en passant to target square, execute the move
     private void executeEnPassant(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
         // The target en passant square + 1 square in the direction the pawn went, is where pawn is now
-        byte enPassantPawnToCaptureSquare = (byte) (targetSquare + (pieceBoard[currentSquare].getColor() ? BoardUtils.BLACK_PAWN_MOVE_OFFSET : BoardUtils.WHITE_PAWN_MOVE_OFFSET));
+        byte enPassantPawnToCaptureSquare = (byte) (targetSquare + (pieceBoard[currentSquare].getColor() ? BLACK_PAWN_MOVE_OFFSET : WHITE_PAWN_MOVE_OFFSET));
         utils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
         // Remove the captured pawn from list and board
         pieceList.remove(pieceBoard[enPassantPawnToCaptureSquare]);
