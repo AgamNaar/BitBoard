@@ -16,9 +16,6 @@ public class PieceMovement {
     private static final long[] WHITE_PAWN_CAPTURE = new long[BoardUtils.BOARD_SIZE];
     private static final long[] BLACK_PAWN_ONLY_MOVES = new long[BoardUtils.BOARD_SIZE];
     private static final long[] BLACK_PAWN_CAPTURE = new long[BoardUtils.BOARD_SIZE];
-    //TODO: has duplicate in PieceThreateningLine
-    private static final long[] ROOK_MASK = new long[BoardUtils.BOARD_SIZE];
-    private static final long[] BISHOP_MASK = new long[BoardUtils.BOARD_SIZE];
 
     // precalculate all the moves a piece can do, on each square, using the PieceMovementPreemptiveCalculator class
     public PieceMovement() {
@@ -33,8 +30,6 @@ public class PieceMovement {
         pieceMovementPreemptiveCalculator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES, WHITE_PAWN_CAPTURE, BoardUtils.WHITE);
         pieceMovementPreemptiveCalculator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES, BLACK_PAWN_CAPTURE, BoardUtils.BLACK);
         pieceMovementPreemptiveCalculator.generateLinePieceMoves(ROOK_MOVES, BISHOP_MOVES);
-        pieceMovementPreemptiveCalculator.generateMaskRook(ROOK_MASK);
-        pieceMovementPreemptiveCalculator.generateMaskBishop(BISHOP_MASK);
     }
 
     // Given a piecePosition of a king and a bitboard of all the pieces with the same color, return the moves it can do as bitboard
@@ -55,7 +50,7 @@ public class PieceMovement {
     // return the moves it can do as bitboard
     public long getRookMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
-        long keyVal = ROOK_MASK[piecePosition] & allPiecesBitBoard;
+        long keyVal = PieceMovementPreemptiveCalculator.ROOK_MASK[piecePosition] & allPiecesBitBoard;
         long moves = ROOK_MOVES.get(piecePosition).get(keyVal);
         return moves & ~sameColorPieceBitBoard;
     }
@@ -64,7 +59,7 @@ public class PieceMovement {
     // return the moves it can do as bitboard
     public long getBishopMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
-        long keyVal = BISHOP_MASK[piecePosition] & allPiecesBitBoard;
+        long keyVal = PieceMovementPreemptiveCalculator.BISHOP_MASK[piecePosition] & allPiecesBitBoard;
         long moves = BISHOP_MOVES.get(piecePosition).get(keyVal);
         return moves & ~sameColorPieceBitBoard;
     }

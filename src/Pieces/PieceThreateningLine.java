@@ -1,6 +1,5 @@
 package Pieces;
 
-import PreemptiveCalculators.PieceMovementPreemptiveCalculator;
 import PreemptiveCalculators.ThreateningLinePreemptiveCalculator;
 import Utils.BoardUtils;
 
@@ -19,18 +18,12 @@ public class PieceThreateningLine {
 
     private static final ArrayList<ArrayList<HashMap<Long, Long>>> rookThreateningLinesDB = new ArrayList<>();
     private static final ArrayList<ArrayList<HashMap<Long, Long>>> bishopThreateningLinesDB = new ArrayList<>();
-    //TODO: has duplicate in PieceMovement
-    private static final long[] ROOK_MASK = new long[BoardUtils.BOARD_SIZE];
-    private static final long[] BISHOP_MASK = new long[BoardUtils.BOARD_SIZE];
 
     private static final long NO_VALUE = 0;
 
     // precalculate all the threatening lines using the ThreateningLinePreemptiveCalculator class
     public PieceThreateningLine() {
         ThreateningLinePreemptiveCalculator threateningLinePreemptiveCalculator = new ThreateningLinePreemptiveCalculator();
-        PieceMovementPreemptiveCalculator pieceMovementPreemptiveCalculator = new PieceMovementPreemptiveCalculator();
-        pieceMovementPreemptiveCalculator.generateMaskRook(ROOK_MASK);
-        pieceMovementPreemptiveCalculator.generateMaskBishop(BISHOP_MASK);
         // Initializing
         for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
             rookThreateningLinesDB.add(new ArrayList<>());
@@ -55,13 +48,13 @@ public class PieceThreateningLine {
 
     // Given a position of a piece, enemy king position and bitboard of the board, return the threat line of the rook
     public long getRookThreateningLine(byte piecePosition, byte enemyKingSquare, Long allPiecesBitBoard) {
-        long keyVal = ROOK_MASK[piecePosition] & allPiecesBitBoard;
+        long keyVal = ThreateningLinePreemptiveCalculator.ROOK_MASK[piecePosition] & allPiecesBitBoard;
         return rookThreateningLinesDB.get(piecePosition).get(enemyKingSquare).getOrDefault(keyVal, NO_VALUE);
     }
 
     // Given a position of a piece, enemy king position and bitboard of the board, return the threat line of the bishop
     public long getBishopThreateningLine(byte piecePosition, byte enemyKingSquare, Long allPiecesBitBoard) {
-        long keyVal = BISHOP_MASK[piecePosition] & allPiecesBitBoard;
+        long keyVal = ThreateningLinePreemptiveCalculator.BISHOP_MASK[piecePosition] & allPiecesBitBoard;
         return bishopThreateningLinesDB.get(piecePosition).get(enemyKingSquare).getOrDefault(keyVal, NO_VALUE);
     }
 }

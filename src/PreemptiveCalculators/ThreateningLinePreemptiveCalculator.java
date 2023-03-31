@@ -5,9 +5,6 @@ import Utils.BoardUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static PreemptiveCalculators.PreemptiveCalculatorUtils.FIRST_8_BITS;
-import static PreemptiveCalculators.PreemptiveCalculatorUtils.NUMBER_OF_POSSIBLE_VALUES_PER_EDGE;
-
 /*
  Class responsible for precalculating the treating lines for the lines piece, per square position, per enemy king position and per key val
  Key value is the bitboard of the board & mask of the piece
@@ -15,10 +12,10 @@ import static PreemptiveCalculators.PreemptiveCalculatorUtils.NUMBER_OF_POSSIBLE
  the treat line will be all the square from the piece to the king as bitboards
  if more than 1 piece block a piece from treating, or the king is not even on the attack line, return 0
  */
-public class ThreateningLinePreemptiveCalculator {
+public class ThreateningLinePreemptiveCalculator extends PreemptiveCalculator {
 
-    private static final PreemptiveCalculatorUtils preemptiveCalculatorUtils = new PreemptiveCalculatorUtils();
     private static final BoardUtils boardUtils = new BoardUtils();
+    private static final int MAX_NUMBER_OF_PIECE_ON_THREAT_LINE = 1;
 
     // Fill the list with all the possible threaten moves of a bishop and a rook
     public void calculateThreateningLines(ArrayList<ArrayList<HashMap<Long, Long>>> rookTreatingLinesList, ArrayList<ArrayList<HashMap<Long, Long>>> bishopTreatingLinesList) {
@@ -32,14 +29,14 @@ public class ThreateningLinePreemptiveCalculator {
     // Given the square of the piece, enemy king square, value of the row and column of the bitboard of all piece, add new threaten line to list of not 0
     private void addThreatenLineToList(byte pieceSquare, byte kingPosition, int rowValue, int columnValue, ArrayList<ArrayList<HashMap<Long, Long>>> rookTreatingLinesList, ArrayList<ArrayList<HashMap<Long, Long>>> bishopTreatingLinesList) {
         // Calculate the value of the bitboard of the pieces according to row/column value per line of movement of bishop/rook
-        long rookBitBoardMap = preemptiveCalculatorUtils.toBitMapRook(pieceSquare, rowValue, columnValue);
-        long bishopBitBoardMap = preemptiveCalculatorUtils.toBitMapBishop(pieceSquare, rowValue, columnValue);
-        long rookMask = preemptiveCalculatorUtils.toBitMapRook(pieceSquare, FIRST_8_BITS, FIRST_8_BITS);
-        long bishopMask = preemptiveCalculatorUtils.toBitMapBishop(pieceSquare, FIRST_8_BITS, FIRST_8_BITS);
-        byte[] rookEdgeDistance = preemptiveCalculatorUtils.getDistanceTillEdgeOfBoard(pieceSquare);
-        byte[] bishopEdgeDistances = preemptiveCalculatorUtils.getDistanceTillEdgeOfBoardBishop(pieceSquare);
-        long rookThreateningLine = checkIfValidThanCreateThreatenLine(pieceSquare, kingPosition, rookBitBoardMap, rookMask, PreemptiveCalculatorUtils.ROOK_OFFSETS, rookEdgeDistance);
-        long bishopThreateningLine = checkIfValidThanCreateThreatenLine(pieceSquare, kingPosition, bishopBitBoardMap, bishopMask, PreemptiveCalculatorUtils.BISHOP_OFFSETS, bishopEdgeDistances);
+        long rookBitBoardMap = toBitMapRook(pieceSquare, rowValue, columnValue);
+        long bishopBitBoardMap = toBitMapBishop(pieceSquare, rowValue, columnValue);
+        long rookMask = toBitMapRook(pieceSquare, FIRST_8_BITS, FIRST_8_BITS);
+        long bishopMask = toBitMapBishop(pieceSquare, FIRST_8_BITS, FIRST_8_BITS);
+        byte[] rookEdgeDistance = getDistanceTillEdgeOfBoard(pieceSquare);
+        byte[] bishopEdgeDistances = getDistanceTillEdgeOfBoardBishop(pieceSquare);
+        long rookThreateningLine = checkIfValidThanCreateThreatenLine(pieceSquare, kingPosition, rookBitBoardMap, rookMask, ROOK_OFFSETS, rookEdgeDistance);
+        long bishopThreateningLine = checkIfValidThanCreateThreatenLine(pieceSquare, kingPosition, bishopBitBoardMap, bishopMask, BISHOP_OFFSETS, bishopEdgeDistances);
         // Add threaten line if not empty, meaning not 0
         if (rookThreateningLine != 0)
             rookTreatingLinesList.get(pieceSquare).get(kingPosition).put(rookBitBoardMap, rookThreateningLine);
@@ -86,8 +83,7 @@ public class ThreateningLinePreemptiveCalculator {
                         return currentLine;
                     }
                     numberOfPiecesOnLine++;
-                    // if more or 2 piece between the piece and the king, not a threatening line
-                    if (numberOfPiecesOnLine == 2)
+                    if (numberOfPiecesOnLine > MAX_NUMBER_OF_PIECE_ON_THREAT_LINE)
                         return 0;
                 }
                 currentLine |= currentBitPosition;

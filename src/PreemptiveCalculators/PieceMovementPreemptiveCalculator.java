@@ -5,9 +5,6 @@ import Utils.BoardUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static PreemptiveCalculators.PreemptiveCalculatorUtils.FIRST_8_BITS;
-import static PreemptiveCalculators.PreemptiveCalculatorUtils.NUMBER_OF_POSSIBLE_VALUES_PER_EDGE;
-
 /*
  This class is responsible to generate for each piece, for each square on the board (0-63), bitboards that represent the moves it can do
  For line pieces - their moves depend on the pieces on their moving line, so it calculates for each square all the possible combination on the moving lines
@@ -15,7 +12,7 @@ import static PreemptiveCalculators.PreemptiveCalculatorUtils.NUMBER_OF_POSSIBLE
  For none line pieces - simply calculate for each square what are the possible movements and save it on an array
  The movement is represented as a bitboard
  */
-public class PieceMovementPreemptiveCalculator {
+public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
 
     private static final byte[] KING_OFFSETS = {-9, -8, -7, -1, 1, 7, 8, 9};
     private static final byte[] ROOK_OFFSETS = {1, -1, 8, -8};
@@ -26,7 +23,6 @@ public class PieceMovementPreemptiveCalculator {
     private static final byte MAX_DX_DY = 4;
 
     private static final BoardUtils boardUtilises = new BoardUtils();
-    private static final PreemptiveCalculatorUtils preemptiveCalculatorUtils = new PreemptiveCalculatorUtils();
     private static final byte LAST_SQUARE_ON_2ND_ROW = 15;
     private static final byte LAST_SQUARE_ON_6TH_ROW = 47;
 
@@ -91,30 +87,16 @@ public class PieceMovementPreemptiveCalculator {
         }
     }
 
-    // TODO: move to utils
-    // Generate a mask for squares for rook row and columns
-    public void generateMaskRook(long[] maskArray) {
-        for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
-            maskArray[square] = preemptiveCalculatorUtils.toBitMapRook(square, FIRST_8_BITS, FIRST_8_BITS);
-    }
-
-    // TODO: move to utils
-    // Generate a mask for squares for bishop row and columns
-    public void generateMaskBishop(long[] maskArray) {
-        for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
-            maskArray[square] = preemptiveCalculatorUtils.toBitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
-    }
-
     // Generate moves for each square of the board for line pieces (Rook, Bishop)
     private void generateAllMovesLinePiece(ArrayList<HashMap<Long, Long>> moveListRook, ArrayList<HashMap<Long, Long>> moveListBishop) {
         // For each square, for each possible values of rows and columns, get the movement it can do
         for (byte pieceSquare = 0; pieceSquare < BoardUtils.BOARD_SIZE; pieceSquare++) {
             for (int rowValue = 0; rowValue < NUMBER_OF_POSSIBLE_VALUES_PER_EDGE; rowValue++) {
                 for (int columnValue = 0; columnValue < NUMBER_OF_POSSIBLE_VALUES_PER_EDGE; columnValue++) {
-                    long rookMap = preemptiveCalculatorUtils.toBitMapRook(pieceSquare, rowValue, columnValue);
-                    long bishopMap = preemptiveCalculatorUtils.toBitMapBishop(pieceSquare, rowValue, columnValue);
-                    long movesRook = generateMovesLinePiece(pieceSquare, ROOK_OFFSETS, rookMap, preemptiveCalculatorUtils.getDistanceTillEdgeOfBoard(pieceSquare));
-                    long movesBishop = generateMovesLinePiece(pieceSquare, PreemptiveCalculatorUtils.BISHOP_OFFSETS, bishopMap, preemptiveCalculatorUtils.getDistanceTillEdgeOfBoardBishop(pieceSquare));
+                    long rookMap = toBitMapRook(pieceSquare, rowValue, columnValue);
+                    long bishopMap = toBitMapBishop(pieceSquare, rowValue, columnValue);
+                    long movesRook = generateMovesLinePiece(pieceSquare, ROOK_OFFSETS, rookMap, getDistanceTillEdgeOfBoard(pieceSquare));
+                    long movesBishop = generateMovesLinePiece(pieceSquare, BISHOP_OFFSETS, bishopMap, getDistanceTillEdgeOfBoardBishop(pieceSquare));
                     moveListRook.get(pieceSquare).put(rookMap, movesRook);
                     moveListBishop.get(pieceSquare).put(bishopMap, movesBishop);
                 }

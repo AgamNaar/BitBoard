@@ -3,14 +3,18 @@ package PreemptiveCalculators;
 import Utils.BoardUtils;
 
 import static Utils.BoardUtils.BOARD_EDGE_SIZE;
-// Utils class for preemptive calculates
-public class PreemptiveCalculatorUtils {
+
+// General class for preemptive calculating things before the game start
+public class PreemptiveCalculator {
 
     private static final BoardUtils boardUtils = new BoardUtils();
 
     public static final byte[] ROOK_OFFSETS = {1, -1, 8, -8};
     public static final byte[] BISHOP_OFFSETS = {7, -7, 9, -9};
     public static final long FIRST_8_BITS = 0XFF;
+
+    public static final long[] ROOK_MASK = new long[BoardUtils.BOARD_SIZE];
+    public static final long[] BISHOP_MASK = new long[BoardUtils.BOARD_SIZE];
 
     // for a row or a column, number of possible value as bitboard of all pieces of a row/column
     public static final int NUMBER_OF_POSSIBLE_VALUES_PER_EDGE = (int) Math.pow(2, BoardUtils.BOARD_EDGE_SIZE);
@@ -22,6 +26,22 @@ public class PreemptiveCalculatorUtils {
     public static final int BISHOP_LEFT_DOWN = 1;
     public static final int BISHOP_RIGHT_UP = 2;
     public static final int BISHOP_RIGHT_DOWN = 3;
+
+    private static boolean initialized = false;
+
+
+    public PreemptiveCalculator() {
+        // If not initialized, initialize the bishop/rook mask
+        if (!initialized) {
+            for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
+                BISHOP_MASK[square] = toBitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
+
+            for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
+                ROOK_MASK[square] = toBitMapRook(square, FIRST_8_BITS, FIRST_8_BITS);
+
+            initialized = true;
+        }
+    }
 
     // Given a position, return how many bits till the end of the board from the position to left, right, up, down
     public byte[] getDistanceTillEdgeOfBoard(byte position) {
