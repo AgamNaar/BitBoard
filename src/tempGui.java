@@ -92,8 +92,7 @@ public class tempGui extends JFrame {
     private void function(int currRow, int curCol) {
         if (preCol == -1 && preRow == -1) {
             byte square = (byte) ((currRow * 8) + curCol);
-            System.out.println(square);
-            long movement = game.getMovesAsBitBoards(square);
+            long movement = game.getMovesAsBitBoard(square);
             if (movement != 0) {
                 boolean[] possibleMoves = convertLongMovementToArr(movement);
                 for (int row = 0; row < 8; row++) {
@@ -112,7 +111,8 @@ public class tempGui extends JFrame {
                 byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = (byte) ((preRow * 8) + preCol);
                 boolean[] possibleMoves = convertLongMovementToArr(preMoves);
                 if (possibleMoves[targetSquare]) {
-                    game.executeMove(currentSquare, targetSquare);
+                    int gameStatus = game.executeMove(currentSquare, targetSquare);
+                    System.out.println(gameStatus);
                 }
             }
             preCol = -1;

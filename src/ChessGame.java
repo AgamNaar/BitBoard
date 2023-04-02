@@ -1,9 +1,11 @@
-import Pieces.*;
+import Pieces.King;
+import Pieces.LinePiece;
+import Pieces.Piece;
 import Utils.BoardUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
+// TODO: fix king can take def piece
 // A class that represent a game of chess
 public class ChessGame {
     private boolean colorOfPlayersTurn;
@@ -11,10 +13,16 @@ public class ChessGame {
     private final Piece[] pieceBoard = new Piece[BoardUtils.BOARD_SIZE];
     private long playerTurnPiecesBitBoard;
     private long allPiecesBitBoard;
-    private ArrayList<Long> treatingKingLines;
+    private final LinkedList<Long> treatingKingLines = new LinkedList<>();
+    private boolean isKPlayerTurnKingChecked;
 
     private static final BoardUtils boardUtils = new BoardUtils();
     private SpecialMovesHandler specialMovesHandler;
+
+    private static final int NORMAL = 0;
+    private static final int CHECK = 1;
+    private static final int DRAW = 2;
+    private static final int CHECKMATE = 3;
 
     @SuppressWarnings("unused")
     // Initialize a game of chess using a fen
@@ -42,9 +50,7 @@ public class ChessGame {
 
         pieceList = translator.getPieceList();
         convertPieceListToBoard();
-        updateBitBoards();
-        treatingKingLines = new ArrayList<>();
-        updateTreatingLines();
+        updateGameAttributes();
     }
 
     // Insert all the pieces in their correct position on the board from the list ofp pieces
@@ -53,13 +59,20 @@ public class ChessGame {
             pieceBoard[piece.getSquare()] = piece;
     }
 
+    // Update the game attributes such as bitboards, treating line, and if the king is checked
+    private void updateGameAttributes() {
+        updateBitBoards();
+        isKPlayerTurnKingChecked = isPlayerChecked(colorOfPlayersTurn);
+        updateTreatingLines();
+    }
+
     // update the value of allPiecesBitBoard and playerTurnPiecesBitBoard according to the piece list
     private void updateBitBoards() {
         allPiecesBitBoard = 0;
         playerTurnPiecesBitBoard = 0;
-        // For each piece, add its position to its appropriate board
+        // For each piece, if its same color as player turn add to bitboard of player turn, either way add to all pieces bitboard
         for (Piece piece : pieceList) {
-            long pieceBitBoardPosition = boardUtils.getSquarePositionAsBitboardPosition(piece.getSquare());
+            long pieceBitBoardPosition = piece.getSquareAsBitBoard();
             if (piece.getColor() == colorOfPlayersTurn)
                 playerTurnPiecesBitBoard |= pieceBitBoardPosition;
 
@@ -67,38 +80,46 @@ public class ChessGame {
         }
     }
 
-    // Execute a move of a piece that its in the initial square, to the target square
-    public void executeMove(byte currentSquare, byte targetSquare) {
+    // Execute a move of a piece that its in the initial square, to the target square. return status after the move
+    public int executeMove(byte currentSquare, byte targetSquare) {
         Piece pieceToMove = pieceBoard[currentSquare];
-        if (specialMovesHandler.isSpecialMove(targetSquare)) {
+        if (specialMovesHandler.isSpecialMove(targetSquare, pieceToMove)) {
             specialMovesHandler.executeSpecialMove(currentSquare, targetSquare, pieceList, pieceBoard);
         } else
             boardUtils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
 
         // Change the turn of the player, update bitboards and the special moves
         colorOfPlayersTurn = !colorOfPlayersTurn;
-        specialMovesHandler.updateSpecialMoves(targetSquare, currentSquare, pieceToMove);
-        updateBitBoards();
-        afterTurnCheck();
+        specialMovesHandler.updateSpecialMoves(currentSquare, currentSquare, pieceToMove);
+        updateGameAttributes();
+        return getGameStatus();
     }
 
-    // At the end of a turn, check the status of the game (i.e. is it checked, check mated or a draw)
-    private void afterTurnCheck() {
+    // get the status of the game - normal, check, draw or checkmate
+    private int getGameStatus() {
         // Check if the enemy player is checked, checkmated or if it's a draw
-        if (isPlayerChecked(colorOfPlayersTurn)) {
-            if (isPlayerCheckMated(colorOfPlayersTurn))
-                System.out.println("check mate");
+        if (isKPlayerTurnKingChecked) {
+            if (doesPlayerHasLegalMovesToPlay(colorOfPlayersTurn))
+                return CHECK;
             else
-                System.out.println("check");
+                return CHECKMATE;
         } else {
-            if (getPlayerMoves(colorOfPlayersTurn) == 0)
-                System.out.println("draw");
+            if (!doesPlayerHasLegalMovesToPlay(colorOfPlayersTurn))
+                return DRAW;
         }
+        return NORMAL;
     }
 
-    // If player has no moves to do and checked, he is checkmated
-    private boolean isPlayerCheckMated(boolean playerColor) {
-        return getPlayerMoves(playerColor) == 0;
+    // Check if a player has a legal moves to do, if it has at least 1 return true
+    private boolean doesPlayerHasLegalMovesToPlay(boolean playerColor) {
+        for (Piece piece : pieceList) {
+            if (piece.getColor() == playerColor) {
+                long pieceMovement = getLegalMovesAsBitBoard(piece);
+                if (pieceMovement != 0)
+                    return true;
+            }
+        }
+        return false;
     }
 
     // Given a color of a player, check if their king is checked, if yes return true
@@ -137,9 +158,12 @@ public class ChessGame {
     }
 
     // Given a square, get all the legal moves that piece can do as bitboard
-    public long getMovesAsBitBoards(byte square) {
+    public long getMovesAsBitBoard(byte square) {
         Piece piece = pieceBoard[square];
-        // Check if there is a piece on that square, and is the same color as the player who's playing
+        return getLegalMovesAsBitBoard(piece);
+    }
+
+    private long getLegalMovesAsBitBoard(Piece piece) {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
             long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerMoves(!colorOfPlayersTurn), allPiecesBitBoard);
@@ -152,28 +176,35 @@ public class ChessGame {
     //  moves are king walking into a check or piece move that will case a check
     private long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove) {
         long enemyMovementBitBoard = getPlayerMoves(!pieceToMove.getColor()), piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
+        long enemyKingBitPosition = getKing(!colorOfPlayersTurn).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
         if (pieceToMove instanceof King)
             return bitBoardMoves & ~enemyMovementBitBoard;
 
-        // Check if moving a piece won't expose the king to a check
-        for (Long treatLine : treatingKingLines) {
-            if ((piecePositionAsBitBoard & treatLine) != 0)
-                return bitBoardMoves & treatLine;
+        if (isKPlayerTurnKingChecked) {
+            // Check if moving a piece won't expose the king to a check
+            for (Long treatLine : treatingKingLines)
+                if ((treatLine & (playerTurnPiecesBitBoard & ~enemyKingBitPosition)) == 0)
+                    bitBoardMoves &= treatLine;
+        } else {
+            // Check if moving a piece won't expose the king to a check
+            for (Long treatLine : treatingKingLines) {
+                if ((piecePositionAsBitBoard & treatLine) != 0)
+                    return bitBoardMoves & treatLine;
+            }
         }
-
         return bitBoardMoves;
     }
 
     // Update the treating lines
     private void updateTreatingLines() {
         treatingKingLines.clear();
-        Piece playerTurnKing = getKing(colorOfPlayersTurn);
+        Piece enemyKing = getKing(colorOfPlayersTurn);
         for (Piece piece : pieceList) {
             long treatKingLine = 0;
             // If piece is enemy piece and line piece, get its treating line
             if (piece.getColor() != colorOfPlayersTurn && piece instanceof LinePiece)
-                treatKingLine = ((LinePiece) piece).getTreatLines(playerTurnKing, allPiecesBitBoard);
+                treatKingLine = ((LinePiece) piece).getTreatLines(enemyKing.getSquare(), allPiecesBitBoard);
 
             // Only add if treating line is not 0
             if (treatKingLine != 0)
@@ -181,7 +212,9 @@ public class ChessGame {
         }
     }
 
+    // Return a copy of the list of all the pieces
     public LinkedList<Piece> getPieceList() {
-        return pieceList;
+        return new LinkedList<>(pieceList);
     }
+
 }

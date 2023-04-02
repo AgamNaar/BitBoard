@@ -100,7 +100,7 @@ public class PreemptiveCalculator {
         byte[] currEdgeDistances = getDistanceTillEdgeOfBoardBishop((byte) currSquare);
         int diagonalLength = offset == BISHOP_OFFSETS[BISHOP_RIGHT_UP] ? currEdgeDistances[BISHOP_RIGHT_DOWN] : currEdgeDistances[BISHOP_LEFT_DOWN];
         // Run on the entire diagonal from up to down
-        for (int i = 0; i < diagonalLength; i++) {
+        for (int i = 0; i <= diagonalLength; i++) {
             long bitVal = extractBit(i, diagonalVal);
             // Move the bit to the curr square, then move curr square by -offset
             result |= bitVal << currSquare;
