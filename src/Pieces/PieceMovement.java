@@ -17,20 +17,26 @@ public class PieceMovement {
     private static final long[] BLACK_PAWN_ONLY_MOVES = new long[BoardUtils.BOARD_SIZE];
     private static final long[] BLACK_PAWN_CAPTURE = new long[BoardUtils.BOARD_SIZE];
 
+    private static boolean initialized = false;
+
     // precalculate all the moves a piece can do, on each square, using the PieceMovementPreemptiveCalculator class
     public PieceMovement() {
-        // Initializing
-        for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
-            ROOK_MOVES.add(new HashMap<>());
-            BISHOP_MOVES.add(new HashMap<>());
+        if (!initialized) {
+            // Initializing
+            for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
+                ROOK_MOVES.add(new HashMap<>());
+                BISHOP_MOVES.add(new HashMap<>());
+            }
+            PieceMovementPreemptiveCalculator pieceMovementPreemptiveCalculator = new PieceMovementPreemptiveCalculator();
+            pieceMovementPreemptiveCalculator.generateKingMoves(KING_MOVES);
+            pieceMovementPreemptiveCalculator.generateKnightMoves(KNIGHT_MOVES);
+            pieceMovementPreemptiveCalculator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES, WHITE_PAWN_CAPTURE, BoardUtils.WHITE);
+            pieceMovementPreemptiveCalculator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES, BLACK_PAWN_CAPTURE, BoardUtils.BLACK);
+            pieceMovementPreemptiveCalculator.generateLinePieceMoves(ROOK_MOVES, BISHOP_MOVES);
+            initialized = true;
         }
-        PieceMovementPreemptiveCalculator pieceMovementPreemptiveCalculator = new PieceMovementPreemptiveCalculator();
-        pieceMovementPreemptiveCalculator.generateKingMoves(KING_MOVES);
-        pieceMovementPreemptiveCalculator.generateKnightMoves(KNIGHT_MOVES);
-        pieceMovementPreemptiveCalculator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES, WHITE_PAWN_CAPTURE, BoardUtils.WHITE);
-        pieceMovementPreemptiveCalculator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES, BLACK_PAWN_CAPTURE, BoardUtils.BLACK);
-        pieceMovementPreemptiveCalculator.generateLinePieceMoves(ROOK_MOVES, BISHOP_MOVES);
     }
+
 
     // Given a piecePosition of a king and a bitboard of all the pieces with the same color, return the moves it can do as bitboard
     public long getKingMovement(byte piecePosition, long sameColorPieceBitBoard) {

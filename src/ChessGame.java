@@ -5,7 +5,7 @@ import Utils.BoardUtils;
 
 import java.util.LinkedList;
 
-// TODO: fix king can take def piece
+// TODO: pawn promotion
 // A class that represent a game of chess
 public class ChessGame {
     private boolean colorOfPlayersTurn;
@@ -29,7 +29,6 @@ public class ChessGame {
     public ChessGame(String fen) {
         FenTranslator translator = new FenTranslator(fen);
         getGameSetUp(translator);
-
     }
 
     // Initialize a game of at the default startup
@@ -157,6 +156,20 @@ public class ChessGame {
         return movementBitBoard;
     }
 
+    // Return as bitboard all the squares that are threatened by enemy player
+    private long threatenedSquare() {
+        // By removing the king, squares that are threatened beyond him will also be marked
+        long bitBoardWithoutKing = allPiecesBitBoard & ~getKing(colorOfPlayersTurn).getSquareAsBitBoard();
+        long movementBitBoard = 0;
+        // For each piece in piece list, added the movement of pieces with same color as player
+        for (Piece piece : pieceList)
+            if (piece.getColor() == !colorOfPlayersTurn)
+                // By setting friendly pieces to 0, pieces that are protected are also marked
+                movementBitBoard |= piece.getMovesAsBitBoard(bitBoardWithoutKing, 0);
+
+        return movementBitBoard;
+    }
+
     // Given a square, get all the legal moves that piece can do as bitboard
     public long getMovesAsBitBoard(byte square) {
         Piece piece = pieceBoard[square];
@@ -175,11 +188,14 @@ public class ChessGame {
     // Given a piece and the bitboard of moves it can do, remove all moves that are illegal
     //  moves are king walking into a check or piece move that will case a check
     private long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove) {
-        long enemyMovementBitBoard = getPlayerMoves(!pieceToMove.getColor()), piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
+        long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
         long enemyKingBitPosition = getKing(!colorOfPlayersTurn).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
-        if (pieceToMove instanceof King)
-            return bitBoardMoves & ~enemyMovementBitBoard;
+        if (pieceToMove instanceof King) {
+            long threatenedSquare = threatenedSquare();
+            return bitBoardMoves & ~threatenedSquare;
+        }
+
 
         if (isKPlayerTurnKingChecked) {
             // Check if moving a piece won't expose the king to a check
@@ -210,6 +226,12 @@ public class ChessGame {
             if (treatKingLine != 0)
                 treatingKingLines.add(treatKingLine);
         }
+    }
+
+    // Reset the game to default start up
+    public void reset() {
+        FenTranslator translator = new FenTranslator();
+        getGameSetUp(translator);
     }
 
     // Return a copy of the list of all the pieces

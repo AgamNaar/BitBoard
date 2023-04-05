@@ -23,7 +23,7 @@ public class tempGui extends JFrame {
         board = new JButton[8][8];
 
         // create a panel with a grid layout
-        JPanel panel = new JPanel(new GridLayout(8, 8));
+        JPanel boardPanel = new JPanel(new GridLayout(8, 8));
 
         // create the buttons, add them to the array and to the panel
         for (int row = 7; row >= 0; row--) {
@@ -35,20 +35,41 @@ public class tempGui extends JFrame {
                     board[row][col].setBackground(Color.GRAY);
                 }
                 board[row][col].addActionListener(new ButtonListener());
-                panel.add(board[row][col]);
+                boardPanel.add(board[row][col]);
             }
         }
 
-        // add the panel to the frame
-        getContentPane().add(panel);
+        // create a "Reset" button and add it to a separate panel
+        JPanel resetPanel = new JPanel();
+        JButton resetButton = new JButton("Reset");
+        resetButton.addActionListener(new ResetButtonListener());
+        resetButton.setPreferredSize(new Dimension(80, 30)); // set preferred size
+        resetPanel.add(resetButton);
+
+        // create a container panel and add the board panel and reset panel to it
+        JPanel containerPanel = new JPanel();
+        containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
+        containerPanel.add(boardPanel);
+        containerPanel.add(resetPanel);
+
+        // add the container panel to the frame
+        getContentPane().add(containerPanel);
 
         // set the frame properties
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 400);
+        setSize(400, 450); // increased height to accommodate the "Reset" button
         setLocationRelativeTo(null);
         setVisible(true);
 
         updateBoard();
+    }
+
+    // ActionListener for the "Reset" button
+    private class ResetButtonListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            game.reset();
+            updateBoard();
+        }
     }
 
 
@@ -112,7 +133,7 @@ public class tempGui extends JFrame {
                 boolean[] possibleMoves = convertLongMovementToArr(preMoves);
                 if (possibleMoves[targetSquare]) {
                     int gameStatus = game.executeMove(currentSquare, targetSquare);
-                    System.out.println(gameStatus);
+                    // System.out.println(gameStatus);
                 }
             }
             preCol = -1;

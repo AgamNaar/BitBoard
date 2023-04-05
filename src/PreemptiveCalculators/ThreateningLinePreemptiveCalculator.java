@@ -83,8 +83,9 @@ public class ThreateningLinePreemptiveCalculator extends PreemptiveCalculator {
                         return currentLine;
                     }
                     numberOfPiecesOnLine++;
+                    // Too many piece, check next offset
                     if (numberOfPiecesOnLine > MAX_NUMBER_OF_PIECE_ON_THREAT_LINE)
-                        return 0;
+                        continue;
                 }
                 currentLine |= currentBitPosition;
             }

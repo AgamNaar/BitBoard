@@ -21,20 +21,25 @@ public class PieceThreateningLine {
 
     private static final long NO_VALUE = 0;
 
+    private static boolean initialized = false;
+
     // precalculate all the threatening lines using the ThreateningLinePreemptiveCalculator class
     public PieceThreateningLine() {
-        ThreateningLinePreemptiveCalculator threateningLinePreemptiveCalculator = new ThreateningLinePreemptiveCalculator();
-        // Initializing
-        for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
-            rookThreateningLinesDB.add(new ArrayList<>());
-            bishopThreateningLinesDB.add(new ArrayList<>());
-            for (int j = 0; j < BoardUtils.BOARD_SIZE; j++) {
-                rookThreateningLinesDB.get(i).add(new HashMap<>());
-                bishopThreateningLinesDB.get(i).add(new HashMap<>());
+        if (!initialized) {
+            ThreateningLinePreemptiveCalculator threateningLinePreemptiveCalculator = new ThreateningLinePreemptiveCalculator();
+            // Initializing
+            for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
+                rookThreateningLinesDB.add(new ArrayList<>());
+                bishopThreateningLinesDB.add(new ArrayList<>());
+                for (int j = 0; j < BoardUtils.BOARD_SIZE; j++) {
+                    rookThreateningLinesDB.get(i).add(new HashMap<>());
+                    bishopThreateningLinesDB.get(i).add(new HashMap<>());
+                }
             }
+            // Fill the db with the possible threatening lines
+            threateningLinePreemptiveCalculator.calculateThreateningLines(rookThreateningLinesDB, bishopThreateningLinesDB);
+            initialized = true;
         }
-        // Fill the db with the possible threatening lines
-        threateningLinePreemptiveCalculator.calculateThreateningLines(rookThreateningLinesDB, bishopThreateningLinesDB);
     }
 
     // Given a position of a piece, enemy king position and bitboard of the board, return the threat line of the queen
