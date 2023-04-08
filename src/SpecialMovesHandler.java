@@ -1,7 +1,4 @@
-import Pieces.King;
-import Pieces.Pawn;
-import Pieces.Piece;
-import Pieces.Rook;
+import Pieces.*;
 import Utils.BoardUtils;
 
 import java.util.LinkedList;
@@ -22,6 +19,8 @@ execute the special move and update the list and board of pieces - assume that t
  */
 public class SpecialMovesHandler {
 
+    private static final byte LAST_ROW_WHITE = 55;
+    private static final byte LAST_ROW_BLACK = 8;
     private boolean whiteShortCastle;
     private boolean whiteLongCastle;
     private boolean blackShortCastle;
@@ -86,14 +85,19 @@ public class SpecialMovesHandler {
     public void executeSpecialMove(byte currentSquare, byte targetSquare, LinkedList<Piece> pieceList, Piece[] pieceBoard) {
         if (pieceBoard[currentSquare] instanceof King)
             executeCastling(currentSquare, targetSquare, pieceBoard, pieceList);
-        else
-            executeEnPassant(currentSquare, targetSquare, pieceBoard, pieceList);
+        else {
+            if (targetSquare == enPassantTargetSquare)
+                executeEnPassant(currentSquare, targetSquare, pieceBoard, pieceList);
+            else
+                executePromotion(currentSquare, targetSquare, pieceBoard, pieceList);
+        }
     }
 
     // Return whatever or not if target square is a special move square, meaning moving there is castling or en passant move
     public boolean isSpecialMove(byte targetSquare, Piece pieceToMove) {
-        if (pieceToMove instanceof Pawn)
-            return targetSquare == enPassantTargetSquare;
+        if (pieceToMove instanceof Pawn) {
+            return targetSquare == enPassantTargetSquare || isPromotionSquare(targetSquare);
+        }
 
         if (pieceToMove instanceof King)
             return (targetSquare == WHITE_SHORT_CASTLE_SQUARE && whiteShortCastle) ||
@@ -102,6 +106,11 @@ public class SpecialMovesHandler {
                     (targetSquare == BLACK_LONG_CASTLE_SQUARE && blackLongCastle);
 
         return false;
+    }
+
+    // Check if the pawn is on a promotion square, either or on the last row or the first row
+    private boolean isPromotionSquare(byte targetSquare) {
+        return targetSquare < LAST_ROW_BLACK || targetSquare > LAST_ROW_WHITE;
     }
 
     // Update the en passant target square
@@ -209,5 +218,17 @@ public class SpecialMovesHandler {
         // Remove the captured pawn from list and board
         pieceList.remove(pieceBoard[enPassantPawnToCaptureSquare]);
         pieceBoard[enPassantPawnToCaptureSquare] = null;
+    }
+
+    // Execute promotion move
+    private void executePromotion(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
+        boolean colorOfPiece = pieceBoard[currentSquare].getColor();
+        // Remove piece on target square and replace piece on current square to a queen
+        pieceList.remove(pieceBoard[currentSquare]);
+        pieceList.remove(pieceBoard[targetSquare]);
+        pieceBoard[currentSquare] = null;
+        Piece newQueen = new Queen(targetSquare, colorOfPiece);
+        pieceBoard[targetSquare] = newQueen;
+        pieceList.add(newQueen);
     }
 }

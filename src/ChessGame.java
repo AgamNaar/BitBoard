@@ -4,8 +4,8 @@ import Pieces.Piece;
 import Utils.BoardUtils;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
-// TODO: pawn promotion
 // A class that represent a game of chess
 public class ChessGame {
     private boolean colorOfPlayersTurn;
@@ -89,7 +89,7 @@ public class ChessGame {
 
         // Change the turn of the player, update bitboards and the special moves
         colorOfPlayersTurn = !colorOfPlayersTurn;
-        specialMovesHandler.updateSpecialMoves(currentSquare, currentSquare, pieceToMove);
+        specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
         updateGameAttributes();
         return getGameStatus();
     }
@@ -159,7 +159,7 @@ public class ChessGame {
     // Return as bitboard all the squares that are threatened by enemy player
     private long threatenedSquare() {
         // By removing the king, squares that are threatened beyond him will also be marked
-        long bitBoardWithoutKing = allPiecesBitBoard & ~getKing(colorOfPlayersTurn).getSquareAsBitBoard();
+        long bitBoardWithoutKing = allPiecesBitBoard & ~Objects.requireNonNull(getKing(colorOfPlayersTurn)).getSquareAsBitBoard();
         long movementBitBoard = 0;
         // For each piece in piece list, added the movement of pieces with same color as player
         for (Piece piece : pieceList)
@@ -189,7 +189,7 @@ public class ChessGame {
     //  moves are king walking into a check or piece move that will case a check
     private long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove) {
         long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
-        long enemyKingBitPosition = getKing(!colorOfPlayersTurn).getSquareAsBitBoard();
+        long enemyKingBitPosition = Objects.requireNonNull(getKing(!colorOfPlayersTurn)).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
         if (pieceToMove instanceof King) {
             long threatenedSquare = threatenedSquare();
@@ -215,12 +215,14 @@ public class ChessGame {
     // Update the treating lines
     private void updateTreatingLines() {
         treatingKingLines.clear();
-        Piece enemyKing = getKing(colorOfPlayersTurn);
+        Piece myKing = getKing(colorOfPlayersTurn);
         for (Piece piece : pieceList) {
             long treatKingLine = 0;
             // If piece is enemy piece and line piece, get its treating line
-            if (piece.getColor() != colorOfPlayersTurn && piece instanceof LinePiece)
-                treatKingLine = ((LinePiece) piece).getTreatLines(enemyKing.getSquare(), allPiecesBitBoard);
+            if (piece.getColor() != colorOfPlayersTurn && piece instanceof LinePiece) {
+                assert myKing != null;
+                treatKingLine = ((LinePiece) piece).getTreatLines(myKing.getSquare(), allPiecesBitBoard);
+            }
 
             // Only add if treating line is not 0
             if (treatKingLine != 0)
