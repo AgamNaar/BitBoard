@@ -1,4 +1,4 @@
-import Pieces.*;
+import Pieces.Piece;
 import Utils.BoardUtils;
 
 import javax.swing.*;
@@ -13,9 +13,10 @@ public class tempGui extends JFrame {
     private final JButton[][] board;
     private static final BoardUtils utils = new BoardUtils();
 
+    private static final PieceImage imageUtils = new PieceImage();
+
     int preRow = -1, preCol = -1;
     long preMoves = 0;
-
 
     public tempGui() {
         super("Grid of Buttons");
@@ -72,7 +73,6 @@ public class tempGui extends JFrame {
         }
     }
 
-
     private class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             for (int row = 0; row < 8; row++) {
@@ -89,12 +89,10 @@ public class tempGui extends JFrame {
     private void updateBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                if ((row + col) % 2 == 0) {
+                if ((row + col) % 2 == 0)
                     board[row][col].setBackground(Color.WHITE);
-                } else {
+                else
                     board[row][col].setBackground(Color.GRAY);
-                }
-                board[row][col].setText(" ");
             }
         }
         addPieces();
@@ -108,7 +106,6 @@ public class tempGui extends JFrame {
         }
         return map;
     }
-
 
     private void function(int currRow, int curCol) {
         if (preCol == -1 && preRow == -1) {
@@ -133,7 +130,7 @@ public class tempGui extends JFrame {
                 boolean[] possibleMoves = convertLongMovementToArr(preMoves);
                 if (possibleMoves[targetSquare]) {
                     int gameStatus = game.executeMove(currentSquare, targetSquare);
-                    // System.out.println(gameStatus);
+                    System.out.println(gameStatus);
                 }
             }
             preCol = -1;
@@ -144,41 +141,12 @@ public class tempGui extends JFrame {
 
     private void addPieces() {
         LinkedList<Piece> pieceList = game.getPieceList();
+        int size = 28;
+        System.out.println(size);
         for (Piece piece : pieceList) {
-            String pieceSymbol = "";
-
-            if (piece.getColor() == BoardUtils.WHITE) {
-                if (piece instanceof King)
-                    pieceSymbol = "K";
-                if (piece instanceof Queen)
-                    pieceSymbol = "Q";
-                if (piece instanceof Rook)
-                    pieceSymbol = "R";
-                if (piece instanceof Bishop)
-                    pieceSymbol = "B";
-                if (piece instanceof Knight)
-                    pieceSymbol = "N";
-                if (piece instanceof Pawn)
-                    pieceSymbol = "P";
-            }
-
-            if (piece.getColor() == BoardUtils.BLACK) {
-                if (piece instanceof King)
-                    pieceSymbol = "k";
-                if (piece instanceof Queen)
-                    pieceSymbol = "q";
-                if (piece instanceof Rook)
-                    pieceSymbol = "r";
-                if (piece instanceof Bishop)
-                    pieceSymbol = "b";
-                if (piece instanceof Knight)
-                    pieceSymbol = "n";
-                if (piece instanceof Pawn)
-                    pieceSymbol = "p";
-            }
-
+            Image pieceImage = imageUtils.getImageOfPiece(piece).getScaledInstance(size,size,Image.SCALE_SMOOTH);
             int row = utils.getRowOfSquare(piece.getSquare()), col = utils.getColOfSquare(piece.getSquare());
-            board[row][col].setText(pieceSymbol);
+            board[row][col].setIcon(new ImageIcon(pieceImage));
         }
     }
 
