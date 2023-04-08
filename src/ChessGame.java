@@ -1,6 +1,7 @@
 import Pieces.King;
 import Pieces.LinePiece;
 import Pieces.Piece;
+import SpecialMoves.SpecialMovesHandler;
 import Utils.BoardUtils;
 
 import java.util.LinkedList;
@@ -38,7 +39,7 @@ public class ChessGame {
     }
 
     // Retrieve all game setups (castling right, piece position, en passant target square) from fen
-    // set up the board by converting the list into a board, and update the bitboards according to it
+    // set up the board by converting the list into a board, and updateCastlingRights the bitboards according to it
     private void getGameSetUp(FenTranslator translator) {
         colorOfPlayersTurn = translator.isWhiteTurnToPlay();
         specialMovesHandler = new SpecialMovesHandler(translator.canWhiteShortCastle(),
@@ -48,14 +49,10 @@ public class ChessGame {
                 translator.getEnPassantSquareToCapture());
 
         pieceList = translator.getPieceList();
-        convertPieceListToBoard();
-        updateGameAttributes();
-    }
-
-    // Insert all the pieces in their correct position on the board from the list ofp pieces
-    private void convertPieceListToBoard() {
+        // Insert pieces from the list into the board
         for (Piece piece : pieceList)
             pieceBoard[piece.getSquare()] = piece;
+        updateGameAttributes();
     }
 
     // Update the game attributes such as bitboards, treating line, and if the king is checked
@@ -65,7 +62,19 @@ public class ChessGame {
         updateTreatingLines();
     }
 
-    // update the value of allPiecesBitBoard and playerTurnPiecesBitBoard according to the piece list
+    // Given a color of a player, check if their king is checked, if yes return true
+    private boolean isPlayerChecked(boolean playerColor) {
+        // Find the players king, and all enemy players movement
+        Piece playerKing = getKing(playerColor);
+        long enemyMovement = getPlayerMoves(!playerColor), kingBitPosition;
+
+        assert playerKing != null;
+        kingBitPosition = boardUtils.getSquarePositionAsBitboardPosition(playerKing.getSquare());
+        // Check if king is on one of the movement squares of enemy piece
+        return (kingBitPosition & enemyMovement) != 0;
+    }
+
+    // updateCastlingRights the value of allPiecesBitBoard and playerTurnPiecesBitBoard according to the piece list
     private void updateBitBoards() {
         allPiecesBitBoard = 0;
         playerTurnPiecesBitBoard = 0;
@@ -79,6 +88,17 @@ public class ChessGame {
         }
     }
 
+    // Reset the game to default start up
+    public void reset() {
+        FenTranslator translator = new FenTranslator();
+        getGameSetUp(translator);
+    }
+
+    // Return a copy of the list of all the pieces
+    public LinkedList<Piece> getPieceList() {
+        return new LinkedList<>(pieceList);
+    }
+
     // Execute a move of a piece that its in the initial square, to the target square. return status after the move
     public int executeMove(byte currentSquare, byte targetSquare) {
         Piece pieceToMove = pieceBoard[currentSquare];
@@ -87,7 +107,7 @@ public class ChessGame {
         } else
             boardUtils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
 
-        // Change the turn of the player, update bitboards and the special moves
+        // Change the turn of the player, updateCastlingRights bitboards and the special moves
         colorOfPlayersTurn = !colorOfPlayersTurn;
         specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
         updateGameAttributes();
@@ -119,18 +139,6 @@ public class ChessGame {
             }
         }
         return false;
-    }
-
-    // Given a color of a player, check if their king is checked, if yes return true
-    private boolean isPlayerChecked(boolean playerColor) {
-        // Find the players king, and all enemy players movement
-        Piece playerKing = getKing(playerColor);
-        long enemyMovement = getPlayerMoves(!playerColor), kingBitPosition;
-
-        assert playerKing != null;
-        kingBitPosition = boardUtils.getSquarePositionAsBitboardPosition(playerKing.getSquare());
-        // Check if king is on one of the movement squares of enemy piece
-        return (kingBitPosition & enemyMovement) != 0;
     }
 
     // Return the king with same color as player color
@@ -196,7 +204,6 @@ public class ChessGame {
             return bitBoardMoves & ~threatenedSquare;
         }
 
-
         if (isKPlayerTurnKingChecked) {
             // Check if moving a piece won't expose the king to a check
             for (Long treatLine : treatingKingLines)
@@ -228,17 +235,6 @@ public class ChessGame {
             if (treatKingLine != 0)
                 treatingKingLines.add(treatKingLine);
         }
-    }
-
-    // Reset the game to default start up
-    public void reset() {
-        FenTranslator translator = new FenTranslator();
-        getGameSetUp(translator);
-    }
-
-    // Return a copy of the list of all the pieces
-    public LinkedList<Piece> getPieceList() {
-        return new LinkedList<>(pieceList);
     }
 
 }
