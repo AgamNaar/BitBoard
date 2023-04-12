@@ -1,27 +1,24 @@
-import Pieces.Piece;
-import Utils.BoardUtils;
+import gameLogic.ChessGame;
+import gameLogic.Pieces.Piece;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
 
 public class tempGui extends JFrame {
 
     private static final ChessGame game = new ChessGame();
-    private final JButton[][] board;
-    private static final BoardUtils utils = new BoardUtils();
+    private final JButton[][] buttonsBoard;
 
-    private static final PieceImage imageUtils = new PieceImage();
+    private final PiecesImage pieceImage;
 
-    int preRow = -1, preCol = -1;
-    long preMoves = 0;
+    byte preSquare = -1;
 
     public tempGui() {
         super("Grid of Buttons");
         // create a 2D array of 64 buttons
-        board = new JButton[8][8];
+        buttonsBoard = new JButton[8][8];
 
         // create a panel with a grid layout
         JPanel boardPanel = new JPanel(new GridLayout(8, 8));
@@ -29,14 +26,14 @@ public class tempGui extends JFrame {
         // create the buttons, add them to the array and to the panel
         for (int row = 7; row >= 0; row--) {
             for (int col = 7; col >= 0; col--) {
-                board[row][col] = new JButton();
+                buttonsBoard[row][col] = new JButton();
                 if ((row + col) % 2 == 0) {
-                    board[row][col].setBackground(Color.WHITE);
+                    buttonsBoard[row][col].setBackground(Color.WHITE);
                 } else {
-                    board[row][col].setBackground(Color.GRAY);
+                    buttonsBoard[row][col].setBackground(Color.GRAY);
                 }
-                board[row][col].addActionListener(new ButtonListener());
-                boardPanel.add(board[row][col]);
+                buttonsBoard[row][col].addActionListener(new ButtonListener());
+                boardPanel.add(buttonsBoard[row][col]);
             }
         }
 
@@ -44,10 +41,9 @@ public class tempGui extends JFrame {
         JPanel resetPanel = new JPanel();
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(new ResetButtonListener());
-        resetButton.setPreferredSize(new Dimension(80, 30)); // set preferred size
         resetPanel.add(resetButton);
 
-        // create a container panel and add the board panel and reset panel to it
+        // create a container panel and add the buttonsBoard panel and reset panel to it
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
         containerPanel.add(boardPanel);
@@ -62,7 +58,9 @@ public class tempGui extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
+        pieceImage = new PiecesImage(buttonsBoard[0][0].getHeight());
         updateBoard();
+
     }
 
     // ActionListener for the "Reset" button
@@ -75,29 +73,34 @@ public class tempGui extends JFrame {
 
     private class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            for (int row = 0; row < 8; row++) {
-                for (int col = 0; col < 8; col++) {
-                    if (e.getSource() == board[row][col]) {
-                        function(row, col);
-                        return;
-                    }
-                }
-            }
+            for (int row = 0; row < 8; row++)
+                for (int col = 0; col < 8; col++)
+                    if (e.getSource() == buttonsBoard[row][col])
+                        boardButtonClicked(row, col);
         }
     }
 
+    // Update the colors and piece images of the chess board according to the piece board of the game
     private void updateBoard() {
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        Piece[] board = game.getPieceBoard();
+        for (int col = 0; col < 8; col++) {
+            for (int row = 0; row < 8; row++) {
                 if ((row + col) % 2 == 0)
-                    board[row][col].setBackground(Color.WHITE);
+                    buttonsBoard[row][col].setBackground(Color.WHITE);
                 else
-                    board[row][col].setBackground(Color.GRAY);
+                    buttonsBoard[row][col].setBackground(Color.GRAY);
+
+                // if piece at that position not null add its image on the right place
+                if (board[row + col * 8] != null) {
+                    Image pieceImage = this.pieceImage.getImageOfPiece(board[row + col * 8]);
+                    buttonsBoard[col][row].setIcon(new ImageIcon(pieceImage));
+                } else
+                    buttonsBoard[col][row].setIcon(null);
             }
         }
-        addPieces();
     }
 
+    // convert a long to a 64 boolean array, where the bit is on the long will be true on the array
     private boolean[] convertLongMovementToArr(long movement) {
         boolean[] map = new boolean[64];
         long mask = 1;
@@ -107,47 +110,54 @@ public class tempGui extends JFrame {
         return map;
     }
 
-    private void function(int currRow, int curCol) {
-        if (preCol == -1 && preRow == -1) {
+    // function to handle a press of a button that is a part of the piece bitboard
+    // if it's the first click, show moves of the piece (according to color)
+    // if second click, execute the move
+    private void boardButtonClicked(int currRow, int curCol) {
+        if (preSquare == -1) {
             byte square = (byte) ((currRow * 8) + curCol);
             long movement = game.getMovesAsBitBoard(square);
             if (movement != 0) {
-                boolean[] possibleMoves = convertLongMovementToArr(movement);
-                for (int row = 0; row < 8; row++) {
-                    for (int col = 0; col < 8; col++) {
-                        if (possibleMoves[(row * 8) + col]) {
-                            board[row][col].setBackground(Color.YELLOW);
-                        }
-                    }
-                }
+                paintPieceMoveSquares(convertLongMovementToArr(movement));
+                preSquare = square;
             }
-            preRow = currRow;
-            preCol = curCol;
-            preMoves = movement;
         } else {
-            if (preMoves != 0) {
-                byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = (byte) ((preRow * 8) + preCol);
-                boolean[] possibleMoves = convertLongMovementToArr(preMoves);
-                if (possibleMoves[targetSquare]) {
-                    int gameStatus = game.executeMove(currentSquare, targetSquare);
-                    System.out.println(gameStatus);
-                }
-            }
-            preCol = -1;
-            preRow = -1;
+            byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = preSquare;
+            int gameStatus = game.executeMove(currentSquare, targetSquare);
             updateBoard();
+            afterMoveHandle(gameStatus, targetSquare, currentSquare);
+            preSquare = -1;
         }
     }
 
-    private void addPieces() {
-        LinkedList<Piece> pieceList = game.getPieceList();
-        int size = 28;
-        System.out.println(size);
-        for (Piece piece : pieceList) {
-            Image pieceImage = imageUtils.getImageOfPiece(piece).getScaledInstance(size,size,Image.SCALE_SMOOTH);
-            int row = utils.getRowOfSquare(piece.getSquare()), col = utils.getColOfSquare(piece.getSquare());
-            board[row][col].setIcon(new ImageIcon(pieceImage));
-        }
+    private void afterMoveHandle(int gameStatus, byte targetSquare, byte currentSquare) {
+        if (gameStatus == ChessGame.MOVE_NOT_EXECUTED)
+            return;
+
+        if (gameStatus == ChessGame.CHECK || gameStatus == ChessGame.CHECKMATE) 
+            paintSquare(Color.decode("#A44040"),game.getPlayerTurnKingSquare());
+        
+        if (gameStatus == ChessGame.CHECK)
+            makeSound(gameStatus);
+        
+        paintSquare(Color.YELLOW,targetSquare);
+        paintSquare(Color.YELLOW,currentSquare);
+    }
+
+    //TODO: for making sound
+    private void makeSound(int gameStatus) {
+    }
+
+    private void paintSquare(Color color, byte square) {
+        int row = square / 8, col = square % 8;
+        buttonsBoard[row][col].setBackground(color);
+    }
+
+    private void paintPieceMoveSquares(boolean[] possibleMoves) {
+        for (int row = 0; row < 8; row++)
+            for (int col = 0; col < 8; col++)
+                if (possibleMoves[(row * 8) + col])
+                    buttonsBoard[row][col].setBackground(Color.decode("#DBD6D6"));
     }
 
     public static void main(String[] args) {
