@@ -1,7 +1,6 @@
 package gameLogic;
 
 import gameLogic.Pieces.King;
-import gameLogic.Pieces.LinePiece;
 import gameLogic.Pieces.Piece;
 
 import java.util.LinkedList;
@@ -62,8 +61,8 @@ public class LegalMoveHandler {
         for (Piece piece : pieceList) {
             long treatKingLine = 0;
             // If piece is enemy piece and line piece, get its treating line
-            if (piece.getColor() != colorOfPlayersTurn && piece instanceof LinePiece) {
-                treatKingLine = ((LinePiece) piece).getTreatLines(myKing.getSquare(), allPiecesBitBoard);
+            if (piece.getColor() != colorOfPlayersTurn) {
+                treatKingLine = piece.getThreatLines(myKing.getSquare(), allPiecesBitBoard);
             }
 
             // Only add if treating line is not 0

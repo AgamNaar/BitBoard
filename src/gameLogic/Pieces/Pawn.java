@@ -11,4 +11,14 @@ public class Pawn extends Piece {
         long enemyPiecesBitBoards = allPiecesBitBoard & ~sameColorPiecesBitBoard;
         return pieceMovement.getPawnMovement(getSquare(), getColor(), allPiecesBitBoard, enemyPiecesBitBoards);
     }
+
+    @Override
+    public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
+        long pawnAttackSquares = pieceMovement.getPawnCaptureSquare(getColor(),getSquare());
+        long enemyKingBitBoardPosition =utils.getSquarePositionAsBitboardPosition(enemyKingSquare);
+        if ((pawnAttackSquares & enemyKingBitBoardPosition) != 0)
+            return getSquareAsBitBoard();
+
+        return 0;
+    }
 }

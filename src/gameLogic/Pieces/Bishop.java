@@ -1,13 +1,13 @@
 package gameLogic.Pieces;
 
 // Class that represent a bishop
-public class Bishop extends LinePiece {
+public class Bishop extends Piece {
     public Bishop(byte square, boolean color) {
         super(square, color);
     }
 
     @Override
-    public long getTreatLines(byte enemyKingSquare, Long boardBitBoard) {
+    public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
         return threateningLine.getBishopThreateningLine(getSquare(), enemyKingSquare, boardBitBoard);
     }
 

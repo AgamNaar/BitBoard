@@ -10,4 +10,10 @@ public class King extends Piece {
     public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
         return pieceMovement.getKingMovement(getSquare(), sameColorPiecesBitBoard);
     }
+
+    // King can't have a threat line, always return 0
+    @Override
+    public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
+        return 0;
+    }
 }

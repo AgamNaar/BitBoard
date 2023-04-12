@@ -10,8 +10,9 @@ public abstract class Piece {
     private byte square;
     private final boolean color;
 
+    protected static final PieceThreateningLine threateningLine = new PieceThreateningLine();
     protected static final PieceMovement pieceMovement = new PieceMovement();
-    private static final BoardUtils utils = new BoardUtils();
+    protected static final BoardUtils utils = new BoardUtils();
 
     public Piece(byte square, boolean color) {
         this.square = square;
@@ -21,6 +22,15 @@ public abstract class Piece {
     // Abstract method, given bitboard of all pieces on the board and bitboard of only same color piece
     // Return bitboard of all the move the piece can do (without checking if It's legal or not)
     public abstract long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard);
+
+    /*
+    Given the enemy king and the board as bit board, return the treat line of this piece on a king as bitboard
+    treat line - if the piece threat the king, or if an enemy piece block the piece from threading the king
+    the treat line will be all the square from the piece to the king as bitboards
+    if more than 1 piece block a piece from treating, or the king is not even on the attack line, return 0
+    for pawn and a rook, a threat line is if they check the king, and the only square of the threat line will be their square
+    */
+    public abstract long getThreatLines(byte enemyKingSquare, Long boardBitBoard);
 
     // Return the position of the piece as bitboard
     public long getSquareAsBitBoard() {
