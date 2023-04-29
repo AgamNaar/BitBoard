@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 
 public class tempGui extends JFrame {
 
-    private static final String fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -  ";
+    private static final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     private static final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
@@ -66,7 +66,7 @@ public class tempGui extends JFrame {
         updateBoard();
 
 
-        int DEAPTH = 4;
+        int DEAPTH = 5;
         GameEngine engine = new GameEngine();
         for (int i = 1; i <= DEAPTH; i++)
             System.out.println(engine.numberOfPossiblePositions(i, game));
