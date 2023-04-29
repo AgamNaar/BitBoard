@@ -1,6 +1,6 @@
-package gameLogic.PreemptiveCalculators;
+package gamelogic.preemptivecalculators;
 
-import gameLogic.BoardUtils;
+import gamelogic.BoardUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

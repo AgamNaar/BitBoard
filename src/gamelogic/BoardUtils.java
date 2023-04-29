@@ -1,7 +1,7 @@
-package gameLogic;
+package gamelogic;
 
-import gameLogic.Pieces.King;
-import gameLogic.Pieces.Piece;
+import gamelogic.pieces.King;
+import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
 

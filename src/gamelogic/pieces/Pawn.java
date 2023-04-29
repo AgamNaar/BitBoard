@@ -1,4 +1,4 @@
-package gameLogic.Pieces;
+package gamelogic.pieces;
 
 // Class that represent a pawn
 public class Pawn extends Piece {

@@ -1,8 +1,8 @@
-package gameLogic.PreemptiveCalculators;
+package gamelogic.preemptivecalculators;
 
-import gameLogic.BoardUtils;
+import gamelogic.BoardUtils;
 
-import static gameLogic.BoardUtils.BOARD_EDGE_SIZE;
+import static gamelogic.BoardUtils.BOARD_EDGE_SIZE;
 
 // General class for preemptive calculating things before the game start
 public class PreemptiveCalculator {

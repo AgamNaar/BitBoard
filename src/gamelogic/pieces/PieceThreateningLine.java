@@ -1,7 +1,7 @@
-package gameLogic.Pieces;
+package gamelogic.pieces;
 
-import gameLogic.PreemptiveCalculators.ThreateningLinePreemptiveCalculator;
-import gameLogic.BoardUtils;
+import gamelogic.preemptivecalculators.ThreateningLinePreemptiveCalculator;
+import gamelogic.BoardUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

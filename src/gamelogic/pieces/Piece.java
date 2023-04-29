@@ -1,11 +1,11 @@
-package gameLogic.Pieces;
+package gamelogic.pieces;
 
-import gameLogic.BoardUtils;
+import gamelogic.BoardUtils;
 
 // Abstract class that represent a piece, has 2 attributes
 // Color - color of the piece (white/black - true/false)
 // Square - square of the piece on the board
-public abstract class Piece {
+public abstract class Piece implements Cloneable{
 
     private byte square;
     private final boolean color;
@@ -19,12 +19,13 @@ public abstract class Piece {
         this.color = color;
     }
 
+
     // Abstract method, given bitboard of all pieces on the board and bitboard of only same color piece
     // Return bitboard of all the move the piece can do (without checking if It's legal or not)
     public abstract long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard);
 
     /*
-    Given the enemy king and the board as bit board, return the treat line of this piece on a king as bitboard
+    Given the enemy king and the board as a bitboard, return the treat line of this piece on a king as bitboard
     treat line - if the piece threat the king, or if an enemy piece block the piece from threading the king
     the treat line will be all the square from the piece to the king as bitboards
     if more than 1 piece block a piece from treating, or the king is not even on the attack line, return 0
@@ -52,5 +53,14 @@ public abstract class Piece {
 
     public PieceMovement getPieceMovement() {
         return pieceMovement;
+    }
+
+    @Override
+    public Piece clone() {
+        try {
+            return (Piece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

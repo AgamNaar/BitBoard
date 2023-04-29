@@ -1,9 +1,9 @@
-package gameLogic.SpecialMoves;
+package gamelogic.specialmoves;
 
-import gameLogic.Pieces.King;
-import gameLogic.Pieces.Piece;
-import gameLogic.Pieces.Rook;
-import gameLogic.BoardUtils;
+import gamelogic.pieces.King;
+import gamelogic.pieces.Piece;
+import gamelogic.pieces.Rook;
+import gamelogic.BoardUtils;
 
 import java.util.LinkedList;
 
@@ -22,11 +22,11 @@ public class CastlingSpecialMove {
     public static final byte INITIAL_BLACK_ROOK_SQUARE_SHORT = 56;
     public static final byte INITIAL_BLACK_ROOK_SQUARE_LONG = 63;
 
-    private static final long SHORT_CASTLE_SHOULD_BE_NOT_ATTACKED_SQUARE_BITBOARD = 0b1111;
+    private static final long SHORT_CASTLE_SHOULD_BE_NOT_ATTACKED_SQUARE_BITBOARD = 0b1110;
     private static final long SHORT_CASTLE_SHOULD_BE_EMPTY_SQUARE_BITBOARD = 0b0110;
     private static final long SHORT_CASTLING_SQUARE_BITBOARD = 0b10;
-    private static final long LONG_CASTLE_SHOULD_BE_NOT_ATTACKED_SQUARE_BITBOARD = 0b11111000;
-    private static final long LONG_CASTLE_SHOULD_BE_EMPTY_SQUARE_BITBOARD = 0b01110000;
+    private static final long LONG_CASTLE_SHOULD_BE_NOT_ATTACKED_SQUARE_BITBOARD = 0b111000;
+    private static final long LONG_CASTLE_SHOULD_BE_EMPTY_SQUARE_BITBOARD = 0b1110000;
     private static final long LONG_CASTLING_SQUARE_BITBOARD = 0b100000;
     private static final int BLACK_CASTLING_SQUARE_OFFSET = 56;
     private static final byte SHORT_CASTLE_ROOK_OFFSET_FROM_TARGET_SQUARE = 1;
@@ -42,6 +42,14 @@ public class CastlingSpecialMove {
         this.whiteLongCastle = whiteLongCastle;
         this.blackShortCastle = blackShortCastle;
         this.blackLongCastle = blackLongCastle;
+    }
+
+    public CastlingSpecialMove(CastlingSpecialMove castlingSpecialMove) {
+        this.whiteShortCastle = castlingSpecialMove.whiteShortCastle;
+        this.whiteLongCastle = castlingSpecialMove.whiteLongCastle;
+        this.blackShortCastle = castlingSpecialMove.blackShortCastle;
+        this.blackLongCastle = castlingSpecialMove.blackLongCastle;
+
     }
 
     // Update all the castling right according to the piece that has been moved

@@ -1,6 +1,6 @@
-package gameLogic;
+package gamelogic;
 
-import gameLogic.Pieces.*;
+import gamelogic.pieces.*;
 
 import java.util.LinkedList;
 

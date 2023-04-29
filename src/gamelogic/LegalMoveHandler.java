@@ -1,7 +1,8 @@
-package gameLogic;
+package gamelogic;
 
-import gameLogic.Pieces.King;
-import gameLogic.Pieces.Piece;
+import gamelogic.pieces.King;
+import gamelogic.pieces.Pawn;
+import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
 
@@ -30,12 +31,12 @@ public class LegalMoveHandler {
 
     // Given a piece and the bitboard of moves it can do, remove all moves that are illegal
     //  moves are king walking into a check or piece move that will case a check
-    public long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove,LinkedList<Piece> pieceList,boolean colorOfPlayersTurn, long allPiecesBitBoard,long playerTurnPiecesBitBoard,boolean isKPlayerTurnKingChecked) {
+    public long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove, LinkedList<Piece> pieceList, boolean colorOfPlayersTurn, long allPiecesBitBoard, long playerTurnPiecesBitBoard, boolean isKPlayerTurnKingChecked) {
         long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
-        long enemyKingBitPosition = utils.getKing(!colorOfPlayersTurn,pieceList).getSquareAsBitBoard();
+        long enemyKingBitPosition = utils.getKing(!colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
         if (pieceToMove instanceof King) {
-            long threatenedSquare = threatenedSquare( pieceList, allPiecesBitBoard,  colorOfPlayersTurn);
+            long threatenedSquare = threatenedSquare(pieceList, allPiecesBitBoard, colorOfPlayersTurn);
             return bitBoardMoves & ~threatenedSquare;
         }
 
@@ -57,7 +58,7 @@ public class LegalMoveHandler {
     // Update the treating lines
     public void updateTreatingLines(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
         treatingKingLines.clear();
-        Piece myKing = utils.getKing(colorOfPlayersTurn,pieceList);
+        Piece myKing = utils.getKing(colorOfPlayersTurn, pieceList);
         for (Piece piece : pieceList) {
             long treatKingLine = 0;
             // If piece is enemy piece and line piece, get its treating line
@@ -72,15 +73,18 @@ public class LegalMoveHandler {
     }
 
     // Return as bitboard all the squares that are threatened by enemy player
-    private long threatenedSquare(LinkedList<Piece> pieceList,long allPiecesBitBoard, boolean colorOfPlayersTurn) {
+    private long threatenedSquare(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
         // By removing the king, squares that are threatened beyond him will also be marked
-        long bitBoardWithoutKing = allPiecesBitBoard & ~utils.getKing(colorOfPlayersTurn,pieceList).getSquareAsBitBoard();
+        long bitBoardWithoutKing = allPiecesBitBoard & ~utils.getKing(colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
         long movementBitBoard = 0;
         // For each piece in piece list, added the movement of pieces with same color as player
         for (Piece piece : pieceList)
             if (piece.getColor() == !colorOfPlayersTurn)
-                // By setting friendly pieces to 0, pieces that are protected are also marked
-                movementBitBoard |= piece.getMovesAsBitBoard(bitBoardWithoutKing, 0);
+                if (piece instanceof Pawn)
+                    movementBitBoard |= piece.getMovesAsBitBoard(Long.MAX_VALUE, 0);
+                else
+                    // By setting friendly pieces to 0, pieces that are protected are also marked
+                    movementBitBoard |= piece.getMovesAsBitBoard(bitBoardWithoutKing, 0);
 
         return movementBitBoard;
     }

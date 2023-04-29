@@ -1,14 +1,14 @@
-package gameLogic.SpecialMoves;
+package gamelogic.specialmoves;
 
-import gameLogic.Pieces.Pawn;
-import gameLogic.Pieces.Piece;
-import gameLogic.Pieces.Queen;
-import gameLogic.BoardUtils;
+import gamelogic.pieces.Pawn;
+import gamelogic.pieces.Piece;
+import gamelogic.pieces.Queen;
+import gamelogic.BoardUtils;
 
 import java.util.LinkedList;
 
-import static gameLogic.BoardUtils.BLACK_PAWN_MOVE_OFFSET;
-import static gameLogic.BoardUtils.WHITE_PAWN_MOVE_OFFSET;
+import static gamelogic.BoardUtils.BLACK_PAWN_MOVE_OFFSET;
+import static gamelogic.BoardUtils.WHITE_PAWN_MOVE_OFFSET;
 
 // Class that is responsible for updating, executing and giving the special moves a pawn can do (en-passant and promotion)
 public class PawnSpecialMoves {
@@ -23,6 +23,10 @@ public class PawnSpecialMoves {
 
     public PawnSpecialMoves(byte enPassantTargetSquare) {
         this.enPassantTargetSquare = enPassantTargetSquare;
+    }
+
+    public PawnSpecialMoves(PawnSpecialMoves pawnSpecialMoves) {
+        this.enPassantTargetSquare = pawnSpecialMoves.enPassantTargetSquare;
     }
 
     // Get pawn special moves, meaning if it can do an en passant

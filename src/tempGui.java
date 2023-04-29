@@ -1,5 +1,6 @@
-import gameLogic.ChessGame;
-import gameLogic.Pieces.Piece;
+import gameengine.GameEngine;
+import gamelogic.ChessGame;
+import gamelogic.pieces.Piece;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +9,9 @@ import java.awt.event.ActionListener;
 
 public class tempGui extends JFrame {
 
-    private static final ChessGame game = new ChessGame();
+    private static final String fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -  ";
+
+    private static final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
 
     private final PiecesImage pieceImage;
@@ -59,14 +62,23 @@ public class tempGui extends JFrame {
         setVisible(true);
 
         pieceImage = new PiecesImage(buttonsBoard[0][0].getHeight());
+
         updateBoard();
 
+
+        int DEAPTH = 4;
+        GameEngine engine = new GameEngine();
+        for (int i = 1; i <= DEAPTH; i++)
+            System.out.println(engine.numberOfPossiblePositions(i, game));
+
+        //Thread thread = new tempThread(buttonsBoard,game);
+        //thread.start();
     }
 
     // ActionListener for the "Reset" button
     private class ResetButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            game.reset();
+            game.reset(fen);
             updateBoard();
         }
     }
@@ -134,14 +146,15 @@ public class tempGui extends JFrame {
         if (gameStatus == ChessGame.MOVE_NOT_EXECUTED)
             return;
 
-        if (gameStatus == ChessGame.CHECK || gameStatus == ChessGame.CHECKMATE) 
-            paintSquare(Color.decode("#A44040"),game.getPlayerTurnKingSquare());
-        
+        if (gameStatus == ChessGame.CHECK || gameStatus == ChessGame.CHECKMATE)
+            paintSquare(Color.decode("#A44040"), game.getPlayerTurnKingSquare());
+
         if (gameStatus == ChessGame.CHECK)
             makeSound(gameStatus);
-        
-        paintSquare(Color.YELLOW,targetSquare);
-        paintSquare(Color.YELLOW,currentSquare);
+
+        paintSquare(Color.YELLOW, targetSquare);
+        paintSquare(Color.YELLOW, currentSquare);
+
     }
 
     //TODO: for making sound

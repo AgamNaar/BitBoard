@@ -1,7 +1,7 @@
-package gameLogic;
+package gamelogic;
 
-import gameLogic.Pieces.Piece;
-import gameLogic.SpecialMoves.SpecialMovesHandler;
+import gamelogic.pieces.Piece;
+import gamelogic.specialmoves.SpecialMovesHandler;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -23,7 +23,6 @@ public class ChessGame {
     public static final int DRAW = 2;
     public static final int CHECKMATE = 3;
 
-    @SuppressWarnings("unused")
     // Initialize a game of chess using a fen
     public ChessGame(String fen) {
         FenTranslator translator = new FenTranslator(fen);
@@ -36,15 +35,21 @@ public class ChessGame {
         getGameSetUp(translator);
     }
 
-    // Reset the game to default start up
-    public void reset() {
-        FenTranslator translator = new FenTranslator();
-        getGameSetUp(translator);
+    public ChessGame(ChessGame game) {
+        colorOfPlayersTurn = game.getPlayerToPlay();
+        pieceList = game.getPieceList();
+        specialMovesHandler = new SpecialMovesHandler(game.specialMovesHandler);
+        Arrays.fill(pieceBoard, null);
+        for (Piece piece : pieceList)
+            pieceBoard[piece.getSquare()] = piece;
+        legalMoveHandler = new LegalMoveHandler(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
+        updateBitBoards();
     }
 
-    // Return a copy of the board of all the pieces
-    public Piece[] getPieceBoard() {
-        return pieceBoard.clone();
+    // Reset the game to default start up
+    public void reset(String fen) {
+        FenTranslator translator = new FenTranslator(fen);
+        getGameSetUp(translator);
     }
 
     // Given a square, get all the legal moves that piece can do as bitboard
@@ -73,6 +78,7 @@ public class ChessGame {
         specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
         updateBitBoards();
         legalMoveHandler.updateTreatingLines(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
+
         return getGameStatus();
     }
 
@@ -95,8 +101,8 @@ public class ChessGame {
         Arrays.fill(pieceBoard, null);
         for (Piece piece : pieceList)
             pieceBoard[piece.getSquare()] = piece;
-        legalMoveHandler = new LegalMoveHandler(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
         updateBitBoards();
+        legalMoveHandler = new LegalMoveHandler(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
     }
 
     // get the status of the game - normal, check, draw or checkmate
@@ -172,5 +178,24 @@ public class ChessGame {
 
             allPiecesBitBoard |= pieceBitBoardPosition;
         }
+    }
+
+    // Return a copy of the board of all the pieces
+    public Piece[] getPieceBoard() {
+        return pieceBoard.clone();
+    }
+
+    // Return a copy of the list of all the pieces
+    public LinkedList<Piece> getPieceList() {
+        LinkedList<Piece> newPieceList = new LinkedList<>();
+        for (Piece piece : pieceList)
+            newPieceList.add(piece.clone());
+
+        return newPieceList;
+    }
+
+    // Return true if its white turn to play
+    public boolean getPlayerToPlay() {
+        return colorOfPlayersTurn;
     }
 }

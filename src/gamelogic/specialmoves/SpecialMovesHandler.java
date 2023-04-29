@@ -1,6 +1,6 @@
-package gameLogic.SpecialMoves;
+package gamelogic.specialmoves;
 
-import gameLogic.Pieces.*;
+import gamelogic.pieces.*;
 
 import java.util.LinkedList;
 
@@ -23,6 +23,11 @@ public class SpecialMovesHandler {
     public SpecialMovesHandler(boolean whiteShortCastle, boolean whiteLongCastle, boolean blackShortCastle, boolean blackLongCastle, byte enPassantTargetSquare) {
         pawnSpecialMoves = new PawnSpecialMoves(enPassantTargetSquare);
         castlingSpecialMove = new CastlingSpecialMove(whiteShortCastle,whiteLongCastle,blackShortCastle,blackLongCastle);
+    }
+
+    public SpecialMovesHandler(SpecialMovesHandler specialMovesHandler) {
+        this.pawnSpecialMoves = new PawnSpecialMoves(specialMovesHandler.pawnSpecialMoves);
+        this.castlingSpecialMove = new CastlingSpecialMove(specialMovesHandler.castlingSpecialMove);
     }
 
     // Given a piece that has been played, the square it has moved to, updateCastlingRights the special moves accordingly

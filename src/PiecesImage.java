@@ -1,5 +1,5 @@
-import gameLogic.Pieces.*;
-import gameLogic.BoardUtils;
+import gamelogic.pieces.*;
+import gamelogic.BoardUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Objects;
 
-import static gameLogic.BoardUtils.WHITE;
+import static gamelogic.BoardUtils.WHITE;
 
 // A class that represent an object that gets image of the pieces from the folders
 public class PiecesImage {
