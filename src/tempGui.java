@@ -66,10 +66,12 @@ public class tempGui extends JFrame {
         updateBoard();
 
 
-        int DEAPTH = 5;
+        int DEAPTH = 6;
         GameEngine engine = new GameEngine();
         for (int i = 1; i <= DEAPTH; i++)
             System.out.println(engine.numberOfPossiblePositions(i, game));
+
+        //System.out.println(engine.numberOfPossiblePositions(DEAPTH, game));
 
         //Thread thread = new tempThread(buttonsBoard,game);
         //thread.start();

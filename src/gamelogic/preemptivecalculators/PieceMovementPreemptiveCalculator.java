@@ -24,7 +24,7 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
 
     private static final BoardUtils boardUtilises = new BoardUtils();
     private static final byte LAST_SQUARE_ON_2ND_ROW = 15;
-    private static final byte LAST_SQUARE_ON_6TH_ROW = 47;
+    private static final byte LAST_SQUARE_ON_6TH_ROW = 48;
 
     // Change moves array that in each position of the array, it has a bitboard that represent the moves a king can do in the position
     public void generateKingMoves(long[] movesArray) {

@@ -15,18 +15,19 @@ public class GameEngine {
             System.out.println("starting square: "+move.getPiecePosition());
             System.out.println("target square: "+move.getTargetSquare());
         }
-
-         */
+ga         */
         if (depth == 1)
             return pieceMovesList.size();
-
 
 
         int numberOfMoves = 0;
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
             newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
+            //if (depth == 4)
+                //System.out.println("starting: "+pieceMove.getPiecePosition()+" target: "+pieceMove.getTargetSquare()+" number of moves: "+numberOfPossiblePositions(3,newGame));
             numberOfMoves = numberOfMoves + numberOfPossiblePositions(depth - 1, newGame);
+
         }
         return numberOfMoves;
     }
