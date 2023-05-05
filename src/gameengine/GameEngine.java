@@ -7,15 +7,21 @@ import java.util.LinkedList;
 
 public class GameEngine {
 
+    public void depthTest(int depth, ChessGame game) {
+        System.out.println("depth "+depth);
+        LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
+        for (PieceMove pieceMove : pieceMovesList) {
+            ChessGame newGame = new ChessGame(game);
+            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
+            System.out.println(pieceMove+": "+numberOfPossiblePositions(depth-1,newGame));
+        }
+        System.out.println("total: "+numberOfPossiblePositions(depth,game));
+
+    }
+
     // Given a depth and a game, return the number of possible positions for depth moves
     public int numberOfPossiblePositions(int depth, ChessGame game) {
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
-        /*
-        for (PieceMove move : pieceMovesList) {
-            System.out.println("starting square: "+move.getPiecePosition());
-            System.out.println("target square: "+move.getTargetSquare());
-        }
-ga         */
         if (depth == 1)
             return pieceMovesList.size();
 
@@ -24,8 +30,6 @@ ga         */
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
             newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
-            //if (depth == 4)
-                //System.out.println("starting: "+pieceMove.getPiecePosition()+" target: "+pieceMove.getTargetSquare()+" number of moves: "+numberOfPossiblePositions(3,newGame));
             numberOfMoves = numberOfMoves + numberOfPossiblePositions(depth - 1, newGame);
 
         }

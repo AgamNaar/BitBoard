@@ -9,9 +9,9 @@ import java.awt.event.ActionListener;
 
 public class tempGui extends JFrame {
 
-    private static final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private String fen = "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 0 1";
 
-    private static final ChessGame game = new ChessGame(fen);
+    private final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
 
     private final PiecesImage pieceImage;
@@ -45,36 +45,60 @@ public class tempGui extends JFrame {
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(new ResetButtonListener());
         resetPanel.add(resetButton);
+        resetPanel.setPreferredSize(new Dimension(400,5));
 
-        // create a container panel and add the buttonsBoard panel and reset panel to it
+        // create a panel with text field and button
+        JPanel textPanel = new JPanel();
+        JLabel label = new JLabel("Enter Fen and depth");
+        JTextField fenStringText = new JTextField(20);
+        JTextField depthText = new JTextField(4);
+        JButton addButton = new JButton("Go");
+        addButton.addActionListener(new AddButtonListener(fenStringText,depthText));
+        textPanel.add(label);
+        textPanel.add(fenStringText);
+        textPanel.add(depthText);
+        textPanel.add(addButton);
+        textPanel.setPreferredSize(new Dimension(400,20));
+
+        // create a container panel and add the boardPanel, resetPanel, and textPanel to it
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
         containerPanel.add(boardPanel);
         containerPanel.add(resetPanel);
+        containerPanel.add(Box.createVerticalStrut(10));
+        containerPanel.add(textPanel);
 
         // add the container panel to the frame
         getContentPane().add(containerPanel);
 
         // set the frame properties
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 450); // increased height to accommodate the "Reset" button
+        setSize(400, 500); // increased height to accommodate the textPanel
         setLocationRelativeTo(null);
         setVisible(true);
 
         pieceImage = new PiecesImage(buttonsBoard[0][0].getHeight());
 
         updateBoard();
+    }
 
+    // AddButtonListener inner class
+    private class AddButtonListener implements ActionListener {
+        private final JTextField fenStringText;
+        private final JTextField depthText;
 
-        int DEAPTH = 6;
-        GameEngine engine = new GameEngine();
-        for (int i = 1; i <= DEAPTH; i++)
-            System.out.println(engine.numberOfPossiblePositions(i, game));
+        public AddButtonListener(JTextField fenStringText,JTextField depthText) {
+            this.fenStringText = fenStringText;
+            this.depthText = depthText;
+        }
 
-        //System.out.println(engine.numberOfPossiblePositions(DEAPTH, game));
-
-        //Thread thread = new tempThread(buttonsBoard,game);
-        //thread.start();
+        public void actionPerformed(ActionEvent e) {
+            fen = fenStringText.getText();
+            game.reset(fen);
+            updateBoard();
+            GameEngine engine = new GameEngine();
+            engine.depthTest(Integer.parseInt(depthText.getText()),game);
+        }
     }
 
     // ActionListener for the "Reset" button

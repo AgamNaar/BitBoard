@@ -18,6 +18,7 @@ public class PieceMovement {
     private static final long[] BLACK_PAWN_CAPTURE = new long[BoardUtils.BOARD_SIZE];
 
     private static boolean initialized = false;
+    private static final BoardUtils utils = new BoardUtils();
 
     // precalculate all the moves a piece can do, on each square, using the PieceMovementPreemptiveCalculator class
     public PieceMovement() {
@@ -81,10 +82,16 @@ public class PieceMovement {
     // return the moves it can do as bitboard
     public long getPawnMovement(byte piecePosition, boolean color, long allPiecesBitBoard, long enemyPieceBitBoard) {
         // pawn can only capture if there is an enemy piece, and move only if its empty
-        if (color == BoardUtils.WHITE)
-            return ((WHITE_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | ((WHITE_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard));
-        else
-            return ((BLACK_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | ((BLACK_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard));
+        if (color == BoardUtils.WHITE) {
+            long piecePositionBitBoard =  utils.getSquarePositionAsBitboardPosition(piecePosition+8);
+            piecePositionBitBoard = (piecePositionBitBoard & allPiecesBitBoard) != 0 ? 0 :(WHITE_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard);
+            return ((WHITE_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | piecePositionBitBoard;
+        } else {
+            long piecePositionBitBoard =  utils.getSquarePositionAsBitboardPosition(piecePosition-8);
+            piecePositionBitBoard = (piecePositionBitBoard & allPiecesBitBoard) != 0 ? 0 :(BLACK_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard);
+            return ((BLACK_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | piecePositionBitBoard;
+        }
+
     }
 
     // Given a color and a square, return the capture moves that pawn color in that square can do
