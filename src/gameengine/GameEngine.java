@@ -8,14 +8,20 @@ import java.util.LinkedList;
 public class GameEngine {
 
     public void depthTest(int depth, ChessGame game) {
-        System.out.println("depth "+depth);
+        System.out.println("depth " + depth);
+        int current, total = 0;
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
             newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
-            System.out.println(pieceMove+": "+numberOfPossiblePositions(depth-1,newGame));
+            if (depth == 1)
+                current = 1;
+            else
+                current = numberOfPossiblePositions(depth - 1, newGame);
+            System.out.println(pieceMove + ": " + current);
+            total = total + current;
         }
-        System.out.println("total: "+numberOfPossiblePositions(depth,game));
+        System.out.println("total: " + total);
 
     }
 
@@ -24,7 +30,6 @@ public class GameEngine {
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
         if (depth == 1)
             return pieceMovesList.size();
-
 
         int numberOfMoves = 0;
         for (PieceMove pieceMove : pieceMovesList) {

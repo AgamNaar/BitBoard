@@ -32,8 +32,7 @@ public class LegalMoveHandler {
     // Given a piece and the bitboard of moves it can do, remove all moves that are illegal
     //  moves are king walking into a check or piece move that will case a check
     public long removeIllegalMoves(long bitBoardMoves, Piece pieceToMove, LinkedList<Piece> pieceList, boolean colorOfPlayersTurn, long allPiecesBitBoard, long playerTurnPiecesBitBoard, boolean isKPlayerTurnKingChecked) {
-        long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard();
-        long enemyKingBitPosition = utils.getKing(!colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
+        long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard(), kingPositionBitBoard = utils.getKing(colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
         if (pieceToMove instanceof King) {
             long threatenedSquare = threatenedSquare(pieceList, allPiecesBitBoard, colorOfPlayersTurn);
@@ -41,10 +40,16 @@ public class LegalMoveHandler {
         }
 
         if (isKPlayerTurnKingChecked) {
-            // Check if moving a piece won't expose the king to a check
-            for (Long treatLine : treatingKingLines)
-                if ((treatLine & (playerTurnPiecesBitBoard & ~enemyKingBitPosition)) == 0)
+            // While king check, only if u can stop all checks
+            for (Long treatLine : treatingKingLines) {
+                // Check if some piece already block this threat line, if not, piece most block it
+                if ((treatLine & (playerTurnPiecesBitBoard & ~kingPositionBitBoard)) == 0)
                     bitBoardMoves &= treatLine;
+
+                // If piece is on a threat line, that piece most stay on that threat line
+                if ((treatLine & piecePositionAsBitBoard) != 0)
+                    bitBoardMoves &= treatLine;
+            }
         } else {
             // Check if moving a piece won't expose the king to a check
             for (Long treatLine : treatingKingLines) {
