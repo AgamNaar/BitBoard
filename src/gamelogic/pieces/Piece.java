@@ -5,7 +5,7 @@ import gamelogic.BoardUtils;
 // Abstract class that represent a piece, has 2 attributes
 // Color - color of the piece (white/black - true/false)
 // Square - square of the piece on the board
-public abstract class Piece implements Cloneable{
+public abstract class Piece implements Cloneable {
 
     private byte square;
     private final boolean color;

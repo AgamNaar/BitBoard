@@ -42,7 +42,7 @@ public class ChessGame {
         Arrays.fill(pieceBoard, null);
         for (Piece piece : pieceList)
             pieceBoard[piece.getSquare()] = piece;
-        legalMoveHandler = new LegalMoveHandler(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
+        legalMoveHandler = new LegalMoveHandler(pieceList, allPiecesBitBoard, enemyBitBoard(), colorOfPlayersTurn);
         updateBitBoards();
     }
 
@@ -65,25 +65,25 @@ public class ChessGame {
     public int executeMove(byte currentSquare, byte targetSquare) {
         Piece pieceToMove = pieceBoard[currentSquare];
 
-        if (!legalMoveHandler.isValidMove(currentSquare, targetSquare,pieceBoard,colorOfPlayersTurn,getLegalMovesAsBitBoard(pieceToMove)))
+        if (!legalMoveHandler.isValidMove(currentSquare, targetSquare, pieceBoard, colorOfPlayersTurn, getLegalMovesAsBitBoard(pieceToMove)))
             return MOVE_NOT_EXECUTED;
 
-        if (specialMovesHandler.isSpecialMove(targetSquare, pieceToMove)) {
+        if (specialMovesHandler.isSpecialMove(targetSquare, pieceToMove))
             specialMovesHandler.executeSpecialMove(currentSquare, targetSquare, pieceList, pieceBoard);
-        } else
+        else
             boardUtils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
 
         // Change the turn of the player, updateCastlingRights bitboards and the special moves
         colorOfPlayersTurn = !colorOfPlayersTurn;
         specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
         updateBitBoards();
-        legalMoveHandler.updateTreatingLines(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
+        legalMoveHandler.updateTreatingLines(pieceList, allPiecesBitBoard, enemyBitBoard(), colorOfPlayersTurn);
 
         return getGameStatus();
     }
 
     public byte getPlayerTurnKingSquare() {
-        return boardUtils.getKing(colorOfPlayersTurn,pieceList).getSquare();
+        return boardUtils.getKing(colorOfPlayersTurn, pieceList).getSquare();
     }
 
     // Retrieve all game setups (castling right, piece position, en passant target square) from fen
@@ -102,7 +102,7 @@ public class ChessGame {
         for (Piece piece : pieceList)
             pieceBoard[piece.getSquare()] = piece;
         updateBitBoards();
-        legalMoveHandler = new LegalMoveHandler(pieceList,allPiecesBitBoard,colorOfPlayersTurn);
+        legalMoveHandler = new LegalMoveHandler(pieceList, allPiecesBitBoard, enemyBitBoard(), colorOfPlayersTurn);
     }
 
     // get the status of the game - normal, check, draw or checkmate
@@ -149,7 +149,7 @@ public class ChessGame {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
             long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerMoves(!colorOfPlayersTurn), allPiecesBitBoard);
-            return legalMoveHandler.removeIllegalMoves(pieceMoves | specialMoves, piece,pieceList,colorOfPlayersTurn,allPiecesBitBoard,playerTurnPiecesBitBoard,isPlayerChecked(colorOfPlayersTurn));
+            return legalMoveHandler.removeIllegalMoves(pieceMoves | specialMoves, piece, pieceList, colorOfPlayersTurn, allPiecesBitBoard, playerTurnPiecesBitBoard, isPlayerChecked(colorOfPlayersTurn));
         }
         return 0;
     }
@@ -157,7 +157,7 @@ public class ChessGame {
     // Given a color of a player, check if their king is checked, if yes return true
     private boolean isPlayerChecked(boolean playerColor) {
         // Find the players king, and all enemy players movement
-        Piece playerKing = boardUtils.getKing(playerColor,pieceList);
+        Piece playerKing = boardUtils.getKing(playerColor, pieceList);
         long enemyMovement = getPlayerMoves(!playerColor), kingBitPosition;
 
         assert playerKing != null;
@@ -178,6 +178,11 @@ public class ChessGame {
 
             allPiecesBitBoard |= pieceBitBoardPosition;
         }
+    }
+
+    // Return the pieces of the enemy as bitboard
+    private long enemyBitBoard() {
+        return allPiecesBitBoard & ~playerTurnPiecesBitBoard;
     }
 
     // Return a copy of the board of all the pieces

@@ -13,8 +13,8 @@ public class LegalMoveHandler {
     private static final BoardUtils utils = new BoardUtils();
 
     // Builder set up the initial threat line list
-    public LegalMoveHandler(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
-        updateTreatingLines(pieceList, allPiecesBitBoard, colorOfPlayersTurn);
+    public LegalMoveHandler(LinkedList<Piece> pieceList, long allPiecesBitBoard, long enemyPiecesBitBoard, boolean colorOfPlayersTurn) {
+        updateTreatingLines(pieceList, allPiecesBitBoard, enemyPiecesBitBoard, colorOfPlayersTurn);
     }
 
     // Given the current square of the piece and the target square, check if it's a valid move or not
@@ -56,18 +56,17 @@ public class LegalMoveHandler {
     }
 
     // Update the treating lines
-    public void updateTreatingLines(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
+    public void updateTreatingLines(LinkedList<Piece> pieceList, long allPiecesBitBoard, long enemyPiecesBitBoard, boolean colorOfPlayersTurn) {
         treatingKingLines.clear();
         Piece myKing = utils.getKing(colorOfPlayersTurn, pieceList);
         for (Piece piece : pieceList) {
             long treatKingLine = 0;
             // If piece is enemy piece and line piece, get its treating line
-            if (piece.getColor() != colorOfPlayersTurn) {
+            if (piece.getColor() != colorOfPlayersTurn)
                 treatKingLine = piece.getThreatLines(myKing.getSquare(), allPiecesBitBoard);
-            }
 
-            // Only add if treating line is not 0
-            if (treatKingLine != 0)
+            // Only add if treating line is not 0, and remove threats line that in the path of them there are a friendly piece
+            if (treatKingLine != 0 && (treatKingLine & ~piece.getSquareAsBitBoard() & enemyPiecesBitBoard) == 0)
                 treatingKingLines.add(treatKingLine);
         }
     }
