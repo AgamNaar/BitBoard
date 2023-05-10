@@ -1,6 +1,7 @@
 package gameengine;
 
 import gamelogic.ChessGame;
+import gamelogic.pieces.Pawn;
 import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
@@ -13,7 +14,7 @@ public class GameEngine {
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
-            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
+            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare(), pieceMove.getTypeOfPieceToPromoteTo());
             if (depth == 1)
                 current = 1;
             else
@@ -34,9 +35,8 @@ public class GameEngine {
         int numberOfMoves = 0;
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
-            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare());
+            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare(), pieceMove.getTypeOfPieceToPromoteTo());
             numberOfMoves = numberOfMoves + numberOfPossiblePositions(depth - 1, newGame);
-
         }
         return numberOfMoves;
     }
@@ -49,20 +49,27 @@ public class GameEngine {
             // Check if the piece color is the game as the player turn color
             if (piece.getColor() == game.getPlayerToPlay()) {
                 byte piecePosition = piece.getSquare();
-                pieceMoveList.addAll(transferFromBitBoardMovesToMoves(game.getMovesAsBitBoard(piecePosition), piecePosition));
+                pieceMoveList.addAll(transferFromBitBoardMovesToMoves(piece, game.getMovesAsBitBoard(piecePosition), piecePosition));
             }
         }
         return pieceMoveList;
     }
 
     // Given a bitboard and the piece position, return as a list all the piece moves based on the pieceMovesBitBoards
-    private LinkedList<PieceMove> transferFromBitBoardMovesToMoves(long pieceMovesBitBoards, byte piecePosition) {
+    private LinkedList<PieceMove> transferFromBitBoardMovesToMoves(Piece piece, long pieceMovesBitBoards, byte piecePosition) {
         LinkedList<PieceMove> pieceMoveList = new LinkedList<>();
         for (byte i = 0; i < 64; i++) {
-            if (((1L << i) & pieceMovesBitBoards) != 0)
-                pieceMoveList.add(new PieceMove(piecePosition, i));
+            if (((1L << i) & pieceMovesBitBoards) != 0) {
+                boolean isAPawn = piece instanceof Pawn;
+                PieceMove pieceMove = new PieceMove(piecePosition, i, ChessGame.PROMOTE_TO_QUEEN, isAPawn);
+                pieceMoveList.add(pieceMove);
+                if (pieceMove.isItPromotionMove() && isAPawn) {
+                    pieceMoveList.add(new PieceMove(piecePosition, i, ChessGame.PROMOTE_TO_ROOK, true));
+                    pieceMoveList.add(new PieceMove(piecePosition, i, ChessGame.PROMOTE_TO_KNIGHT, true));
+                    pieceMoveList.add(new PieceMove(piecePosition, i, ChessGame.PROMOTE_TO_BISHOP, true));
+                }
+            }
         }
         return pieceMoveList;
     }
-
 }

@@ -161,7 +161,7 @@ public class tempGui extends JFrame {
             }
         } else {
             byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = preSquare;
-            int gameStatus = game.executeMove(currentSquare, targetSquare);
+            int gameStatus = game.executeMove(currentSquare, targetSquare, ChessGame.PROMOTE_TO_KNIGHT);
             updateBoard();
             afterMoveHandle(gameStatus, targetSquare, currentSquare);
             preSquare = -1;

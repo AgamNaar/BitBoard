@@ -22,19 +22,22 @@ public class ChessGame {
     public static final int CHECK = 1;
     public static final int DRAW = 2;
     public static final int CHECKMATE = 3;
+    public static final char PROMOTE_TO_QUEEN = 'q';
+    public static final char PROMOTE_TO_ROOK = 'r';
+    public static final char PROMOTE_TO_KNIGHT = 'n';
+    public static final char PROMOTE_TO_BISHOP = 'b';
 
     // Initialize a game of chess using a fen
     public ChessGame(String fen) {
-        FenTranslator translator = new FenTranslator(fen);
+        FenTranslator translator;
+        if (fen == null || fen.trim().isEmpty())
+            translator = new FenTranslator();
+        else
+            translator = new FenTranslator(fen);
         getGameSetUp(translator);
     }
 
-    // Initialize a game of at the default startup
-    public ChessGame() {
-        FenTranslator translator = new FenTranslator();
-        getGameSetUp(translator);
-    }
-
+    // TODO: temp create copy of a game chess until undo move
     public ChessGame(ChessGame game) {
         colorOfPlayersTurn = game.getPlayerToPlay();
         pieceList = game.getPieceList();
@@ -62,14 +65,14 @@ public class ChessGame {
     }
 
     // Execute a move of a piece that its in the initial square, to the target square. return status after the move
-    public int executeMove(byte currentSquare, byte targetSquare) {
+    public int executeMove(byte currentSquare, byte targetSquare, char typeOfPieceToPromoteTo) {
         Piece pieceToMove = pieceBoard[currentSquare];
 
         if (!legalMoveHandler.isValidMove(currentSquare, targetSquare, pieceBoard, colorOfPlayersTurn, getLegalMovesAsBitBoard(pieceToMove)))
             return MOVE_NOT_EXECUTED;
 
         if (specialMovesHandler.isSpecialMove(targetSquare, pieceToMove))
-            specialMovesHandler.executeSpecialMove(currentSquare, targetSquare, pieceList, pieceBoard);
+            specialMovesHandler.executeSpecialMove(currentSquare, targetSquare, pieceList, pieceBoard, typeOfPieceToPromoteTo);
         else
             boardUtils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
 
@@ -82,6 +85,26 @@ public class ChessGame {
         return getGameStatus();
     }
 
+    // Return a copy of the board of all the pieces
+    public Piece[] getPieceBoard() {
+        return pieceBoard.clone();
+    }
+
+    // Return a copy of the list of all the pieces
+    public LinkedList<Piece> getPieceList() {
+        LinkedList<Piece> newPieceList = new LinkedList<>();
+        for (Piece piece : pieceList)
+            newPieceList.add(piece.clone());
+
+        return newPieceList;
+    }
+
+    // Return true if its white turn to play
+    public boolean getPlayerToPlay() {
+        return colorOfPlayersTurn;
+    }
+
+    // Get the square of the king
     public byte getPlayerTurnKingSquare() {
         return boardUtils.getKing(colorOfPlayersTurn, pieceList).getSquare();
     }
@@ -145,6 +168,7 @@ public class ChessGame {
         return movementBitBoard;
     }
 
+    // Given a piece, return the legal moves that the piece can do
     private long getLegalMovesAsBitBoard(Piece piece) {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
@@ -183,24 +207,5 @@ public class ChessGame {
     // Return the pieces of the enemy as bitboard
     private long enemyBitBoard() {
         return allPiecesBitBoard & ~playerTurnPiecesBitBoard;
-    }
-
-    // Return a copy of the board of all the pieces
-    public Piece[] getPieceBoard() {
-        return pieceBoard.clone();
-    }
-
-    // Return a copy of the list of all the pieces
-    public LinkedList<Piece> getPieceList() {
-        LinkedList<Piece> newPieceList = new LinkedList<>();
-        for (Piece piece : pieceList)
-            newPieceList.add(piece.clone());
-
-        return newPieceList;
-    }
-
-    // Return true if its white turn to play
-    public boolean getPlayerToPlay() {
-        return colorOfPlayersTurn;
     }
 }

@@ -1,8 +1,7 @@
 package gamelogic.specialmoves;
 
-import gamelogic.pieces.Pawn;
-import gamelogic.pieces.Piece;
-import gamelogic.pieces.Queen;
+import gamelogic.ChessGame;
+import gamelogic.pieces.*;
 import gamelogic.BoardUtils;
 
 import java.util.LinkedList;
@@ -50,11 +49,11 @@ public class PawnSpecialMoves {
     }
 
     // Given current square and target square of the piece, execute and update the board and list of pieces
-    public void execute(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
+    public void execute(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList, char typeOfPieceToPromoteTo) {
         if (targetSquare == enPassantTargetSquare)
             executeEnPassant(currentSquare, targetSquare, pieceBoard, pieceList);
         else
-            executePromotion(currentSquare, targetSquare, pieceBoard, pieceList);
+            executePromotion(currentSquare, targetSquare, pieceBoard, pieceList, typeOfPieceToPromoteTo);
     }
 
     // Given the current square of the pawn who do en passant to target square, execute the move
@@ -68,15 +67,33 @@ public class PawnSpecialMoves {
     }
 
     // Execute promotion move
-    private void executePromotion(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList) {
+    private void executePromotion(byte currentSquare, byte targetSquare, Piece[] pieceBoard, LinkedList<Piece> pieceList, char typeOfPieceToPromoteTo) {
         boolean colorOfPiece = pieceBoard[currentSquare].getColor();
         // Remove piece on target square and replace piece on current square to a queen
         pieceList.remove(pieceBoard[currentSquare]);
         pieceList.remove(pieceBoard[targetSquare]);
         pieceBoard[currentSquare] = null;
-        Piece newQueen = new Queen(targetSquare, colorOfPiece);
-        pieceBoard[targetSquare] = newQueen;
-        pieceList.add(newQueen);
+        Piece newPiece = createPieceForPromotion(targetSquare, colorOfPiece, typeOfPieceToPromoteTo);
+        pieceBoard[targetSquare] = newPiece;
+        pieceList.add(newPiece);
+    }
+
+    // According to the type of piece to promotion, create a new piece of that type with the given color and square
+    private Piece createPieceForPromotion(byte targetSquare, boolean colorOfPiece, char typeOfPieceToPromoteTo) {
+        Piece piece;
+        // Create a piece according the type of piece
+        if (ChessGame.PROMOTE_TO_QUEEN == typeOfPieceToPromoteTo)
+            piece = new Queen(targetSquare, colorOfPiece);
+        else if (ChessGame.PROMOTE_TO_ROOK == typeOfPieceToPromoteTo)
+            piece = new Rook(targetSquare, colorOfPiece);
+        else if (ChessGame.PROMOTE_TO_BISHOP == typeOfPieceToPromoteTo)
+            piece = new Bishop(targetSquare, colorOfPiece);
+        else if (ChessGame.PROMOTE_TO_KNIGHT == typeOfPieceToPromoteTo)
+            piece = new Knight(targetSquare, colorOfPiece);
+        else //default to queen
+            piece = new Queen(targetSquare, colorOfPiece);
+
+        return piece;
     }
 
     // Check if the target square is either en-passant square or promotion square

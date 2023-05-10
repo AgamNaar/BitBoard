@@ -7,6 +7,8 @@ import gamelogic.BoardUtils;
 
 import java.util.LinkedList;
 
+import static gamelogic.BoardUtils.WHITE;
+
 // Class that is responsible for updating, executing and giving the special moves a king can do - castling short/long
 public class CastlingSpecialMove {
     private boolean whiteShortCastle;
@@ -53,7 +55,7 @@ public class CastlingSpecialMove {
     }
 
     // Update all the castling right according to the piece that has been moved
-    public void updateCastlingRights(byte currentSquare, Piece pieceToMove) {
+    public void updateCastlingRights(byte currentSquare, byte targetSquare, Piece pieceToMove) {
         // If a rook moved from its initial position, disable that rook side castling
         if (pieceToMove instanceof Rook) {
             switch (currentSquare) {
@@ -74,6 +76,19 @@ public class CastlingSpecialMove {
                 blackShortCastle = false;
                 blackLongCastle = false;
             }
+        }
+
+        // Check if piece took an enemy rook, to cancel
+        if (pieceToMove.getColor() == WHITE) {
+            if (targetSquare == INITIAL_BLACK_ROOK_SQUARE_LONG)
+                blackLongCastle = false;
+            if (targetSquare == INITIAL_BLACK_ROOK_SQUARE_SHORT)
+                blackShortCastle = false;
+        } else {
+            if (targetSquare == INITIAL_WHITE_ROOK_SQUARE_LONG)
+                whiteLongCastle = false;
+            if (targetSquare == INITIAL_WHITE_ROOK_SQUARE_SHORT)
+                whiteShortCastle = false;
         }
     }
 
@@ -100,7 +115,7 @@ public class CastlingSpecialMove {
     // Get king special moves square, for the king is castling short/long
     public long getMoves(Piece piece, long enemyMovement, long piecesBitBoard) {
         long specialMoves = 0;
-        if (piece.getColor() == BoardUtils.WHITE) {
+        if (piece.getColor() == WHITE) {
             if (whiteShortCastle && checkShortCastling(piecesBitBoard, enemyMovement, 0))
                 specialMoves |= SHORT_CASTLING_SQUARE_BITBOARD;
 

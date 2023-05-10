@@ -32,7 +32,7 @@ public class SpecialMovesHandler {
 
     // Given a piece that has been played, the square it has moved to, updateCastlingRights the special moves accordingly
     public void updateSpecialMoves(byte currentSquare, byte targetSquare, Piece pieceToMove) {
-        castlingSpecialMove.updateCastlingRights(currentSquare, pieceToMove);
+        castlingSpecialMove.updateCastlingRights(currentSquare, targetSquare, pieceToMove);
         pawnSpecialMoves.updateEnPassantSquare(currentSquare, targetSquare, pieceToMove);
     }
 
@@ -48,11 +48,11 @@ public class SpecialMovesHandler {
     }
 
     // Execute the special to target square according to the piece and the square, updateCastlingRights the board and list accordingly
-    public void executeSpecialMove(byte currentSquare, byte targetSquare, LinkedList<Piece> pieceList, Piece[] pieceBoard) {
+    public void executeSpecialMove(byte currentSquare, byte targetSquare, LinkedList<Piece> pieceList, Piece[] pieceBoard, char typeOfPieceToPromoteTo) {
         if (pieceBoard[currentSquare] instanceof King)
             castlingSpecialMove.execute(currentSquare, targetSquare, pieceBoard, pieceList);
         else
-            pawnSpecialMoves.execute(currentSquare,targetSquare,pieceBoard,pieceList);
+            pawnSpecialMoves.execute(currentSquare,targetSquare,pieceBoard,pieceList,typeOfPieceToPromoteTo);
     }
 
     // Return whatever or not if target square is a special move square, meaning moving there is castling or en passant move
