@@ -22,7 +22,7 @@ public class SpecialMovesHandler {
     // Builder
     public SpecialMovesHandler(boolean whiteShortCastle, boolean whiteLongCastle, boolean blackShortCastle, boolean blackLongCastle, byte enPassantTargetSquare) {
         pawnSpecialMoves = new PawnSpecialMoves(enPassantTargetSquare);
-        castlingSpecialMove = new CastlingSpecialMove(whiteShortCastle,whiteLongCastle,blackShortCastle,blackLongCastle);
+        castlingSpecialMove = new CastlingSpecialMove(whiteShortCastle, whiteLongCastle, blackShortCastle, blackLongCastle);
     }
 
     public SpecialMovesHandler(SpecialMovesHandler specialMovesHandler) {
@@ -37,12 +37,12 @@ public class SpecialMovesHandler {
     }
 
     // given a piece, check what special moves it can do. A pawn can do en passant and a king can castle
-    public long getSpecialMoves(Piece piece, long enemyMovement, long piecesBitBoard) {
+    public long getSpecialMoves(Piece piece, long enemyMovement, long piecesBitBoard, LinkedList<Piece> pieceList, boolean colorOfPlayersTurn) {
         if (piece instanceof King)
             return castlingSpecialMove.getMoves(piece, enemyMovement, piecesBitBoard);
 
         if (piece instanceof Pawn)
-            return pawnSpecialMoves.getMoves(piece);
+            return pawnSpecialMoves.getMoves(piece, pieceList, piecesBitBoard, colorOfPlayersTurn);
 
         return 0;
     }
@@ -52,7 +52,7 @@ public class SpecialMovesHandler {
         if (pieceBoard[currentSquare] instanceof King)
             castlingSpecialMove.execute(currentSquare, targetSquare, pieceBoard, pieceList);
         else
-            pawnSpecialMoves.execute(currentSquare,targetSquare,pieceBoard,pieceList,typeOfPieceToPromoteTo);
+            pawnSpecialMoves.execute(currentSquare, targetSquare, pieceBoard, pieceList, typeOfPieceToPromoteTo);
     }
 
     // Return whatever or not if target square is a special move square, meaning moving there is castling or en passant move

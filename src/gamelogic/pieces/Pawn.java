@@ -15,11 +15,16 @@ public class Pawn extends Piece {
     // The threat line of a pawn is its square, if he threatens the king
     @Override
     public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
-        long pawnAttackSquares = pieceMovement.getPawnCaptureSquare(getColor(), getSquare());
+        long pawnAttackSquares = getPawnAttackSquare();
         long enemyKingBitBoardPosition = utils.getSquarePositionAsBitboardPosition(enemyKingSquare);
         if ((pawnAttackSquares & enemyKingBitBoardPosition) != 0)
             return getSquareAsBitBoard();
 
         return 0;
+    }
+
+    // Return the attack square of the pawn as bitboards
+    public long getPawnAttackSquare() {
+        return pieceMovement.getPawnCaptureSquare(getColor(), getSquare());
     }
 }

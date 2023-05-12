@@ -30,7 +30,11 @@ public class PawnSpecialMoves {
 
     // Get pawn special moves, meaning if it can do an en passant
     // Can do en passant if target square of en passant is one of its possible attack squares (regardless if there is an enemy piece there)
-    public long getMoves(Piece piece) {
+    // Also can't do en passant if expose to check
+    public long getMoves(Piece piece, LinkedList<Piece> pieceList, long allPieceBitboard, boolean colorOfPlayersTurn) {
+        // If de move expose to check from a rook it's not valid, return 0
+        if (doesExposeToRookCheck(piece.getSquare(), pieceList, allPieceBitboard, colorOfPlayersTurn))
+            return 0;
         long enPassantTargetSquareBitBoard = utils.getSquarePositionAsBitboardPosition(enPassantTargetSquare);
         return piece.getPieceMovement().getPawnCaptureSquare(piece.getColor(), piece.getSquare()) & enPassantTargetSquareBitBoard;
     }
@@ -104,5 +108,48 @@ public class PawnSpecialMoves {
     // Check if the pawn is on a promotion square, either or on the last row or the first row
     private boolean isPromotionSquare(byte targetSquare) {
         return targetSquare < LAST_ROW_BLACK || targetSquare > LAST_ROW_WHITE;
+    }
+
+    // While doing en-passant it can cuz a special situating where it will expose the king to a check from a rook, check that case
+    private boolean doesExposeToRookCheck(byte currentSquare, LinkedList<Piece> pieceList, long allPieceBitboard, boolean colorOfPlayersTurn) {
+        long rowMask = 0xffL << (utils.getRowOfSquare(currentSquare) * 8);
+        Piece myKing = utils.getKing(colorOfPlayersTurn, pieceList);
+        int offset = 1;
+        long currentPosition;
+
+        // If the king isn't in the same row as the pawn, it can't be exposed to check
+        if ((myKing.getSquareAsBitBoard() & rowMask) == 0)
+            return false;
+
+        // Check if one of the enemy rooks is on the same row as the king as the pawn
+        for (Piece piece : pieceList) {
+            if (piece instanceof Rook && piece.getColor() != colorOfPlayersTurn && (piece.getSquareAsBitBoard() & rowMask) != 0) {
+                int counter = 0;
+
+                if (myKing.getSquare() > piece.getSquare())
+                    offset = -1;
+
+                if (offset == 1)
+                    currentPosition = myKing.getSquareAsBitBoard() << offset;
+                else
+                    currentPosition = myKing.getSquareAsBitBoard() >> -offset;
+
+                // Check how many piece there are between the king and the rook
+                while (currentPosition != piece.getSquareAsBitBoard()) {
+                    if ((currentPosition & allPieceBitboard) != 0)
+                        counter++;
+
+                    if (offset == 1)
+                        currentPosition = currentPosition << offset;
+                    else
+                        currentPosition = currentPosition >> -offset;
+                }
+
+                // only 2 pieces, return true
+                if (counter == 2)
+                    return true;
+            }
+        }
+        return false;
     }
 }

@@ -35,7 +35,7 @@ public class LegalMoveHandler {
         long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard(), kingPositionBitBoard = utils.getKing(colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
         // If king, remove all squares that enemy piece can go to
         if (pieceToMove instanceof King) {
-            long threatenedSquare = threatenedSquare(pieceList, allPiecesBitBoard, colorOfPlayersTurn);
+            long threatenedSquare = threatenedSquareForKing(pieceList, allPiecesBitBoard, colorOfPlayersTurn);
             return bitBoardMoves & ~threatenedSquare;
         }
 
@@ -77,7 +77,7 @@ public class LegalMoveHandler {
     }
 
     // Return as bitboard all the squares that are threatened by enemy player
-    private long threatenedSquare(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
+    private long threatenedSquareForKing(LinkedList<Piece> pieceList, long allPiecesBitBoard, boolean colorOfPlayersTurn) {
         // By removing the king, squares that are threatened beyond him will also be marked
         long bitBoardWithoutKing = allPiecesBitBoard & ~utils.getKing(colorOfPlayersTurn, pieceList).getSquareAsBitBoard();
         long movementBitBoard = 0;
@@ -85,7 +85,7 @@ public class LegalMoveHandler {
         for (Piece piece : pieceList)
             if (piece.getColor() == !colorOfPlayersTurn)
                 if (piece instanceof Pawn)
-                    movementBitBoard |= piece.getMovesAsBitBoard(Long.MAX_VALUE, 0);
+                    movementBitBoard |= ((Pawn) piece).getPawnAttackSquare();
                 else
                     // By setting friendly pieces to 0, pieces that are protected are also marked
                     movementBitBoard |= piece.getMovesAsBitBoard(bitBoardWithoutKing, 0);

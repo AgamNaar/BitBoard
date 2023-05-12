@@ -1,5 +1,6 @@
 package gamelogic;
 
+import gamelogic.pieces.Pawn;
 import gamelogic.pieces.Piece;
 import gamelogic.specialmoves.SpecialMovesHandler;
 
@@ -156,14 +157,17 @@ public class ChessGame {
     }
 
     // Given a color of a player, return as bitboard all the moves it pieces can do
-    private long getPlayerMoves(boolean playerColor) {
+    private long getPlayerThreatenedSquare(boolean playerColor) {
         long movementBitBoard = 0;
         // if the player color to get his movement is not the same as the play turn, remove from all allPiecesBitBoard all the same color pieces
         long sameColorPieceBitBoard = colorOfPlayersTurn == playerColor ? playerTurnPiecesBitBoard : allPiecesBitBoard & ~playerTurnPiecesBitBoard;
         // For each piece in piece list, added the movement of pieces with same color as player
         for (Piece piece : pieceList)
             if (piece.getColor() == playerColor)
-                movementBitBoard |= piece.getMovesAsBitBoard(allPiecesBitBoard, sameColorPieceBitBoard);
+                if (piece instanceof Pawn)
+                    movementBitBoard |= ((Pawn) piece).getPawnAttackSquare();
+                else
+                    movementBitBoard |= piece.getMovesAsBitBoard(allPiecesBitBoard, sameColorPieceBitBoard);
 
         return movementBitBoard;
     }
@@ -172,7 +176,7 @@ public class ChessGame {
     private long getLegalMovesAsBitBoard(Piece piece) {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
-            long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerMoves(!colorOfPlayersTurn), allPiecesBitBoard);
+            long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerThreatenedSquare(!colorOfPlayersTurn), allPiecesBitBoard, pieceList, colorOfPlayersTurn);
             return legalMoveHandler.removeIllegalMoves(pieceMoves | specialMoves, piece, pieceList, colorOfPlayersTurn, allPiecesBitBoard, playerTurnPiecesBitBoard, isPlayerChecked(colorOfPlayersTurn));
         }
         return 0;
@@ -182,7 +186,7 @@ public class ChessGame {
     private boolean isPlayerChecked(boolean playerColor) {
         // Find the players king, and all enemy players movement
         Piece playerKing = boardUtils.getKing(playerColor, pieceList);
-        long enemyMovement = getPlayerMoves(!playerColor), kingBitPosition;
+        long enemyMovement = getPlayerThreatenedSquare(!playerColor), kingBitPosition;
 
         assert playerKing != null;
         kingBitPosition = boardUtils.getSquarePositionAsBitboardPosition(playerKing.getSquare());
@@ -208,4 +212,6 @@ public class ChessGame {
     private long enemyBitBoard() {
         return allPiecesBitBoard & ~playerTurnPiecesBitBoard;
     }
+
+
 }
