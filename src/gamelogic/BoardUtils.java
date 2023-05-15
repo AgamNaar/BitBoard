@@ -51,6 +51,14 @@ public class BoardUtils {
                 return piece;
 
         // there is always a king, but for compiler
-        return new King((byte) -1,true);
+        return new King((byte) -1, true);
+    }
+
+    // Shift a number left, if a number is negative, shift it right
+    public long shiftNumberLeft(long num, int offset) {
+        if (offset > 0)
+            return num << offset;
+        else
+            return num >>> -offset;
     }
 }

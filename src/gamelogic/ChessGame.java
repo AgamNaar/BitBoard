@@ -158,7 +158,7 @@ public class ChessGame {
 
     // Given a color of a player, return as bitboard all the moves it pieces can do
     private long getPlayerThreatenedSquare(boolean playerColor) {
-        long movementBitBoard = 0;
+            long movementBitBoard = 0;
         // if the player color to get his movement is not the same as the play turn, remove from all allPiecesBitBoard all the same color pieces
         long sameColorPieceBitBoard = colorOfPlayersTurn == playerColor ? playerTurnPiecesBitBoard : allPiecesBitBoard & ~playerTurnPiecesBitBoard;
         // For each piece in piece list, added the movement of pieces with same color as player
@@ -177,7 +177,8 @@ public class ChessGame {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
             long specialMoves = specialMovesHandler.getSpecialMoves(piece, getPlayerThreatenedSquare(!colorOfPlayersTurn), allPiecesBitBoard, pieceList, colorOfPlayersTurn);
-            return legalMoveHandler.removeIllegalMoves(pieceMoves | specialMoves, piece, pieceList, colorOfPlayersTurn, allPiecesBitBoard, playerTurnPiecesBitBoard, isPlayerChecked(colorOfPlayersTurn));
+            long allPieceMoves = pieceMoves | specialMoves;
+            return legalMoveHandler.removeIllegalMoves(allPieceMoves, piece, pieceList, colorOfPlayersTurn, allPiecesBitBoard, playerTurnPiecesBitBoard, isPlayerChecked(colorOfPlayersTurn),specialMovesHandler.getEnPassantSquare());
         }
         return 0;
     }

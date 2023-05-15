@@ -45,7 +45,7 @@ public class tempGui extends JFrame {
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(new ResetButtonListener());
         resetPanel.add(resetButton);
-        resetPanel.setPreferredSize(new Dimension(400,5));
+        resetPanel.setPreferredSize(new Dimension(400, 5));
 
         // create a panel with text field and button
         JPanel textPanel = new JPanel();
@@ -53,12 +53,12 @@ public class tempGui extends JFrame {
         JTextField fenStringText = new JTextField(20);
         JTextField depthText = new JTextField(4);
         JButton addButton = new JButton("Go");
-        addButton.addActionListener(new AddButtonListener(fenStringText,depthText));
+        addButton.addActionListener(new AddButtonListener(fenStringText, depthText));
         textPanel.add(label);
         textPanel.add(fenStringText);
         textPanel.add(depthText);
         textPanel.add(addButton);
-        textPanel.setPreferredSize(new Dimension(400,20));
+        textPanel.setPreferredSize(new Dimension(400, 20));
 
         // create a container panel and add the boardPanel, resetPanel, and textPanel to it
         JPanel containerPanel = new JPanel();
@@ -80,6 +80,27 @@ public class tempGui extends JFrame {
         pieceImage = new PiecesImage(buttonsBoard[0][0].getHeight());
 
         updateBoard();
+        testPosition();
+    }
+
+    private void testPosition() {
+        String[] perftArray = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ",
+                "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ",
+                "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+                "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
+                "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 "};
+
+        int[] depthArray  = {7,6,8,6,5,6};
+
+        GameEngine engine = new GameEngine();
+
+        for (int i = 0; i < perftArray.length; i++) {
+            System.out.println();
+            System.out.println("--------        Starting test perft " + (i + 1) + "--------        ");
+            game.reset(perftArray[i]);
+            engine.perft(depthArray[i]-2, game);
+        }
     }
 
     // AddButtonListener inner class
@@ -87,7 +108,7 @@ public class tempGui extends JFrame {
         private final JTextField fenStringText;
         private final JTextField depthText;
 
-        public AddButtonListener(JTextField fenStringText,JTextField depthText) {
+        public AddButtonListener(JTextField fenStringText, JTextField depthText) {
             this.fenStringText = fenStringText;
             this.depthText = depthText;
         }
@@ -97,7 +118,7 @@ public class tempGui extends JFrame {
             game.reset(fen);
             updateBoard();
             GameEngine engine = new GameEngine();
-            engine.depthTest(Integer.parseInt(depthText.getText()),game);
+            engine.perft(Integer.parseInt(depthText.getText()), game);
         }
     }
 

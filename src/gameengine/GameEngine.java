@@ -8,9 +8,9 @@ import java.util.LinkedList;
 
 public class GameEngine {
 
-    public void depthTest(int depth, ChessGame game) {
+    public void perft(int depth, ChessGame game) {
         System.out.println("depth " + depth);
-        int current, total = 0;
+        long current, total = 0;
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
@@ -23,16 +23,15 @@ public class GameEngine {
             total = total + current;
         }
         System.out.println("total: " + total);
-
     }
 
     // Given a depth and a game, return the number of possible positions for depth moves
-    public int numberOfPossiblePositions(int depth, ChessGame game) {
+    public long numberOfPossiblePositions(int depth, ChessGame game) {
         LinkedList<PieceMove> pieceMovesList = getAllPossibleMoves(game);
         if (depth == 1)
             return pieceMovesList.size();
 
-        int numberOfMoves = 0;
+        long numberOfMoves = 0;
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
             newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare(), pieceMove.getTypeOfPieceToPromoteTo());

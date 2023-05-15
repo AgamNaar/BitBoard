@@ -69,12 +69,7 @@ public class ThreateningLinePreemptiveCalculator extends PreemptiveCalculator {
             int numberOfPiecesOnLine = 0;
             // Run until the edge of the board or till the enemy king
             for (byte j = 1; j <= movesTillEdge[i]; j++) {
-                // Check if offset is negative or positive to offset right or left
-                long currentBitPosition;
-                if (offsetArray[i] > 0)
-                    currentBitPosition = positionBit << j * offsetArray[i];
-                else
-                    currentBitPosition = positionBit >>> j * -offsetArray[i];
+                long currentBitPosition = boardUtils.shiftNumberLeft(positionBit,j * offsetArray[i]);
 
                 // Check if it's on a piece
                 if ((currentBitPosition & bitBoard) != 0) {

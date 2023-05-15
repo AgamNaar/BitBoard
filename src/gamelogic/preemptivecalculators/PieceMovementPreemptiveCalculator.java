@@ -111,12 +111,7 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
         for (byte i = 0; i < offsetArray.length; i++) {
             // Run until the edge of the board or found a piece
             for (byte j = 1; j <= movesTillEdge[i]; j++) {
-                // Check if offset is negative or positive to offset right or left
-                long currentBit;
-                if (offsetArray[i] > 0)
-                    currentBit = positionBit << j * offsetArray[i];
-                else
-                    currentBit = positionBit >>> j * -offsetArray[i];
+                long currentBit = boardUtilises.shiftNumberLeft(positionBit,j * offsetArray[i]);
 
                 // if not 0, piece on that position, 0 mean position empty
                 if ((currentBit & bitBoard) != 0) {

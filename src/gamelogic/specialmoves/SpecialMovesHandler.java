@@ -1,6 +1,8 @@
 package gamelogic.specialmoves;
 
-import gamelogic.pieces.*;
+import gamelogic.pieces.King;
+import gamelogic.pieces.Pawn;
+import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
 
@@ -65,4 +67,10 @@ public class SpecialMovesHandler {
 
         return false;
     }
+
+    // Return en passant square
+    public byte getEnPassantSquare() {
+        return pawnSpecialMoves.getEnPassantSquare();
+    }
+
 }

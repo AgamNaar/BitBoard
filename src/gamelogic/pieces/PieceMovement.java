@@ -1,10 +1,12 @@
 package gamelogic.pieces;
 
-import gamelogic.preemptivecalculators.PieceMovementPreemptiveCalculator;
 import gamelogic.BoardUtils;
+import gamelogic.preemptivecalculators.PieceMovementPreemptiveCalculator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static gamelogic.BoardUtils.WHITE_PAWN_MOVE_OFFSET;
 
 // Class that provide movement for pieces given their position, and bitboards that represent the state of the board
 public class PieceMovement {
@@ -20,26 +22,29 @@ public class PieceMovement {
     private static boolean initialized = false;
     private static final BoardUtils utils = new BoardUtils();
 
-    // precalculate all the moves a piece can do, on each square, using the PieceMovementPreemptiveCalculator class
+    // Precalculate all the moves a piece can do, on each square, using the PieceMovementPreemptiveCalculator class
     public PieceMovement() {
-        if (!initialized) {
-            // Initializing
-            for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
-                ROOK_MOVES.add(new HashMap<>());
-                BISHOP_MOVES.add(new HashMap<>());
-            }
-            PieceMovementPreemptiveCalculator pieceMovementPreemptiveCalculator = new PieceMovementPreemptiveCalculator();
-            pieceMovementPreemptiveCalculator.generateKingMoves(KING_MOVES);
-            pieceMovementPreemptiveCalculator.generateKnightMoves(KNIGHT_MOVES);
-            pieceMovementPreemptiveCalculator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES, WHITE_PAWN_CAPTURE, BoardUtils.WHITE);
-            pieceMovementPreemptiveCalculator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES, BLACK_PAWN_CAPTURE, BoardUtils.BLACK);
-            pieceMovementPreemptiveCalculator.generateLinePieceMoves(ROOK_MOVES, BISHOP_MOVES);
-            initialized = true;
+        if (initialized)
+            return;
+
+        // Initializing
+        for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
+            ROOK_MOVES.add(new HashMap<>());
+            BISHOP_MOVES.add(new HashMap<>());
         }
+        PieceMovementPreemptiveCalculator preemptiveCalculator = new PieceMovementPreemptiveCalculator();
+        preemptiveCalculator.generateKingMoves(KING_MOVES);
+        preemptiveCalculator.generateKnightMoves(KNIGHT_MOVES);
+        preemptiveCalculator.generatePawnMoves(WHITE_PAWN_ONLY_MOVES, WHITE_PAWN_CAPTURE, BoardUtils.WHITE);
+        preemptiveCalculator.generatePawnMoves(BLACK_PAWN_ONLY_MOVES, BLACK_PAWN_CAPTURE, BoardUtils.BLACK);
+        preemptiveCalculator.generateLinePieceMoves(ROOK_MOVES, BISHOP_MOVES);
+
+        initialized = true;
     }
 
 
-    // Given a piecePosition of a king and a bitboard of all the pieces with the same color, return the moves it can do as bitboard
+    // Given a piecePosition of a king and a bitboard of all the pieces with the same color
+    // return the moves it can do as bitboard
     public long getKingMovement(byte piecePosition, long sameColorPieceBitBoard) {
         // All the moves it can do without piecePosition occupied by same color pieces
         long moves = KING_MOVES[piecePosition];
@@ -47,14 +52,15 @@ public class PieceMovement {
     }
 
     // Given a position of a queen and a bitboard of all the pieces with the same color and a bitboard of all pieces
-    // return the moves it can do as bitboard
+    // Return the moves it can do as bitboard
     public long getQueenMovement(byte piecePosition, long sameColorPieceBitBoard, long allPiecesBitBoard) {
         // Queen moves like a rook and a bishop, and remove square with same color pieces
-        return getRookMovement(piecePosition, sameColorPieceBitBoard, allPiecesBitBoard) | getBishopMovement(piecePosition, sameColorPieceBitBoard, allPiecesBitBoard);
+        return getRookMovement(piecePosition, sameColorPieceBitBoard, allPiecesBitBoard)
+                | getBishopMovement(piecePosition, sameColorPieceBitBoard, allPiecesBitBoard);
     }
 
     // Given a position of a rook and a bitboard of all the pieces with the same color and a bitboard of all pieces
-    // return the moves it can do as bitboard
+    // Return the moves it can do as bitboard
     public long getRookMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = PieceMovementPreemptiveCalculator.ROOK_MASK[piecePosition] & allPiecesBitBoard;
@@ -63,7 +69,7 @@ public class PieceMovement {
     }
 
     // Given a position of a bishop and a bitboard of all the pieces with the same color and a bitboard of all pieces
-    // return the moves it can do as bitboard
+    // Return the moves it can do as bitboard
     public long getBishopMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = PieceMovementPreemptiveCalculator.BISHOP_MASK[piecePosition] & allPiecesBitBoard;
@@ -71,7 +77,8 @@ public class PieceMovement {
         return moves & ~sameColorPieceBitBoard;
     }
 
-    // Given a position of a knight and a bitboard of all the pieces with the same color, return the moves it can do as bitboard
+    // Given a position of a knight and a bitboard of all the pieces with the same color,
+    // Return the moves it can do as bitboard
     public long getKnightMovement(byte piecePosition, long sameColorPieceBitBoard) {
         // All the moves it can do without position occupied by same color pieces
         long moves = KNIGHT_MOVES[piecePosition];
@@ -81,17 +88,18 @@ public class PieceMovement {
     // Given a position of a pawn. its color, bitboard of all the pieces and a bitboard of all enemy pieces
     // return the moves it can do as bitboard
     public long getPawnMovement(byte piecePosition, boolean color, long allPiecesBitBoard, long enemyPieceBitBoard) {
-        // pawn can only capture if there is an enemy piece, and move only if its empty
-        if (color == BoardUtils.WHITE) {
-            long piecePositionBitBoard =  utils.getSquarePositionAsBitboardPosition(piecePosition+8);
-            piecePositionBitBoard = (piecePositionBitBoard & allPiecesBitBoard) != 0 ? 0 :(WHITE_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard);
-            return ((WHITE_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | piecePositionBitBoard;
-        } else {
-            long piecePositionBitBoard =  utils.getSquarePositionAsBitboardPosition(piecePosition-8);
-            piecePositionBitBoard = (piecePositionBitBoard & allPiecesBitBoard) != 0 ? 0 :(BLACK_PAWN_ONLY_MOVES[piecePosition] & ~allPiecesBitBoard);
-            return ((BLACK_PAWN_CAPTURE[piecePosition] & enemyPieceBitBoard)) | piecePositionBitBoard;
-        }
+        long offset = color ? WHITE_PAWN_MOVE_OFFSET : BoardUtils.BLACK_PAWN_MOVE_OFFSET;
+        long squareInfantOfPawn = utils.getSquarePositionAsBitboardPosition(piecePosition + offset);
+        // In order to capture an enemy piece must be in the capture square
+        long captureSquares = (color ? WHITE_PAWN_CAPTURE[piecePosition] : BLACK_PAWN_CAPTURE[piecePosition])
+                & enemyPieceBitBoard;
+        long movementSquares = color ? WHITE_PAWN_ONLY_MOVES[piecePosition] : BLACK_PAWN_ONLY_MOVES[piecePosition];
 
+        // If there is a piece informant of the pawn it can only capture
+        if ((squareInfantOfPawn & allPiecesBitBoard) != 0)
+            return captureSquares;
+
+        return captureSquares | (movementSquares & ~allPiecesBitBoard);
     }
 
     // Given a color and a square, return the capture moves that pawn color in that square can do
