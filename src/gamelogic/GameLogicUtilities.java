@@ -1,12 +1,11 @@
 package gamelogic;
 
-import gamelogic.pieces.King;
 import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
 
 // Util class for all the bit boards operation
-public class BoardUtils {
+public class GameLogicUtilities {
     public static final boolean WHITE = true;
     public static final boolean BLACK = false;
     public static final int BOARD_SIZE = 64;
@@ -15,23 +14,28 @@ public class BoardUtils {
     public static final byte WHITE_PAWN_MOVE_OFFSET = 8;
     public static final byte BLACK_PAWN_MOVE_OFFSET = -8;
 
+    public static final long EMPTY_BOARD = 0;
+
     // Given a square, return its row number
-    public int getRowOfSquare(byte square) {
+    public static int getRowOfSquare(byte square) {
         return square / BOARD_EDGE_SIZE;
     }
 
     // Given a square, return its col number
-    public int getColOfSquare(byte square) {
+    public static int getColOfSquare(byte square) {
         return square % BOARD_EDGE_SIZE;
     }
 
-    // Convert a square represented as a position (i.e. number from 0 to 63), turn it into bit position (i.e. only the bit on the position is 1)
-    public long getSquarePositionAsBitboardPosition(long square) {
+    // Convert a square represented as a position (i.e. number from 0 to 63), turn it into bit position
+    // i.e. only the bit on the position is 1
+    public static long getSquarePositionAsBitboardPosition(long square) {
         return 1L << square;
     }
 
     // Update piece Position from its current square to the target square
-    public void updatePiecePosition(byte targetSquare, byte currentSquare, Piece[] board, LinkedList<Piece> pieceList) {
+    public static void updatePiecePosition(byte targetSquare, byte currentSquare,
+                                    Piece[] board, LinkedList<Piece> pieceList) {
+
         Piece pieceToMove = board[currentSquare];
         Piece pieceToRemove = board[targetSquare];
 
@@ -44,18 +48,8 @@ public class BoardUtils {
         pieceList.remove(pieceToRemove);
     }
 
-    // Return the king with same color as player color
-    public Piece getKing(boolean playerColor, LinkedList<Piece> pieceList) {
-        for (Piece piece : pieceList)
-            if (piece.getColor() == playerColor && piece instanceof King)
-                return piece;
-
-        // there is always a king, but for compiler
-        return new King((byte) -1, true);
-    }
-
     // Shift a number left, if a number is negative, shift it right
-    public long shiftNumberLeft(long num, int offset) {
+    public static long shiftNumberLeft(long num, int offset) {
         if (offset > 0)
             return num << offset;
         else

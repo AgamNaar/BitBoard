@@ -1,23 +1,21 @@
 package gamelogic.preemptivecalculators;
 
-import gamelogic.BoardUtils;
+import gamelogic.GameLogicUtilities;
 
-import static gamelogic.BoardUtils.BOARD_EDGE_SIZE;
+import static gamelogic.GameLogicUtilities.BOARD_EDGE_SIZE;
 
 // General class for preemptive calculating things before the game start
 public class PreemptiveCalculator {
-
-    private static final BoardUtils boardUtils = new BoardUtils();
 
     public static final byte[] ROOK_OFFSETS = {1, -1, 8, -8};
     public static final byte[] BISHOP_OFFSETS = {7, -7, 9, -9};
     public static final long FIRST_8_BITS = 0XFF;
 
-    public static final long[] ROOK_MASK = new long[BoardUtils.BOARD_SIZE];
-    public static final long[] BISHOP_MASK = new long[BoardUtils.BOARD_SIZE];
+    public static final long[] ROOK_MASK = new long[GameLogicUtilities.BOARD_SIZE];
+    public static final long[] BISHOP_MASK = new long[GameLogicUtilities.BOARD_SIZE];
 
     // for a row or a column, number of possible value as bitboard of all pieces of a row/column
-    public static final int NUMBER_OF_POSSIBLE_VALUES_PER_EDGE = (int) Math.pow(2, BoardUtils.BOARD_EDGE_SIZE);
+    public static final int NUMBER_OF_POSSIBLE_VALUES_PER_EDGE = (int) Math.pow(2, GameLogicUtilities.BOARD_EDGE_SIZE);
     public static final int EDGE_DISTANCE_LEFT = 0;
     public static final int EDGE_DISTANCE_RIGHT = 1;
     public static final int EDGE_DISTANCE_UP = 2;
@@ -29,18 +27,19 @@ public class PreemptiveCalculator {
 
     private static boolean initialized = false;
 
-
     public PreemptiveCalculator() {
         // If not initialized, initialize the bishop/rook mask
-        if (!initialized) {
-            for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
-                BISHOP_MASK[square] = toBitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
+        if (initialized)
+            return;
 
-            for (byte square = 0; square < BoardUtils.BOARD_SIZE; square++)
-                ROOK_MASK[square] = toBitMapRook(square, FIRST_8_BITS, FIRST_8_BITS);
+        for (byte square = 0; square < GameLogicUtilities.BOARD_SIZE; square++)
+            BISHOP_MASK[square] = toBitMapBishop(square, FIRST_8_BITS, FIRST_8_BITS);
 
-            initialized = true;
-        }
+        for (byte square = 0; square < GameLogicUtilities.BOARD_SIZE; square++)
+            ROOK_MASK[square] = toBitMapRook(square, FIRST_8_BITS, FIRST_8_BITS);
+
+        initialized = true;
+
     }
 
     // Given a position, return how many bits till the end of the board from the position to left, right, up, down
@@ -58,7 +57,7 @@ public class PreemptiveCalculator {
         return distances;
     }
 
-    // Given a position, return how many squares the bishop can go from his position to right up, left down, left up and right down
+    // Given a position, return how many squares the bishop can go from his position to
     // left up, left down, right up, right down
     public byte[] getDistanceTillEdgeOfBoardBishop(byte position) {
         byte[] distances = getDistanceTillEdgeOfBoard(position);
@@ -72,7 +71,7 @@ public class PreemptiveCalculator {
 
     // Given a square, rowValue. columnValue: set the value of row/column of the square to be rowValue and columnValue
     public long toBitMapRook(byte square, long rowValue, long columnValue) {
-        int row = boardUtils.getRowOfSquare(square), column = boardUtils.getColOfSquare(square);
+        int row = GameLogicUtilities.getRowOfSquare(square), column = GameLogicUtilities.getColOfSquare(square);
         long rowMask = rowValue << (BOARD_EDGE_SIZE * row), columnMask = 0;
 
         for (int i = 0; i < BOARD_EDGE_SIZE; i++) {
@@ -84,11 +83,16 @@ public class PreemptiveCalculator {
         return rowMask | columnMask;
     }
 
-    // Given a square, nwDiagonalValue. neDiagonalValue: set the value of nwDiagonalValue/neDiagonalValue of the square to be nwDiagonalValue/neDiagonalValue
+    // Given a square, nwDiagonalValue. neDiagonalValue:
+    // set the value of nwDiagonalValue/neDiagonalValue of the square to be nwDiagonalValue/neDiagonalValue
     public long toBitMapBishop(byte square, long nwDiagonalValue, long neDiagonalValue) {
         byte[] edgeDistances = getDistanceTillEdgeOfBoardBishop(square);
-        long resultNwDiagonal = insertDialogVal(square, nwDiagonalValue, BISHOP_OFFSETS[BISHOP_RIGHT_UP], edgeDistances[BISHOP_RIGHT_UP]);
-        long resultNeDiagonal = insertDialogVal(square, neDiagonalValue, BISHOP_OFFSETS[BISHOP_LEFT_UP], edgeDistances[BISHOP_LEFT_UP]);
+        long resultNwDiagonal = insertDialogVal(square, nwDiagonalValue, BISHOP_OFFSETS[BISHOP_RIGHT_UP],
+                edgeDistances[BISHOP_RIGHT_UP]);
+
+        long resultNeDiagonal = insertDialogVal(square, neDiagonalValue, BISHOP_OFFSETS[BISHOP_LEFT_UP],
+                edgeDistances[BISHOP_LEFT_UP]);
+
         return resultNwDiagonal | resultNeDiagonal;
     }
 
@@ -98,7 +102,9 @@ public class PreemptiveCalculator {
         // Find the most up square on the diagonal and set curr square to the value
         int currSquare = square + (offset * offsetSquareTillEdge);
         byte[] currEdgeDistances = getDistanceTillEdgeOfBoardBishop((byte) currSquare);
-        int diagonalLength = offset == BISHOP_OFFSETS[BISHOP_RIGHT_UP] ? currEdgeDistances[BISHOP_RIGHT_DOWN] : currEdgeDistances[BISHOP_LEFT_DOWN];
+        int diagonalLength = offset == BISHOP_OFFSETS[BISHOP_RIGHT_UP] ?
+                currEdgeDistances[BISHOP_RIGHT_DOWN] : currEdgeDistances[BISHOP_LEFT_DOWN];
+
         // Run on the entire diagonal from up to down
         for (int i = 0; i <= diagonalLength; i++) {
             long bitVal = extractBit(i, diagonalVal);

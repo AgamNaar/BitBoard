@@ -1,4 +1,4 @@
-import gameengine.GameEngine;
+import gameengine.Perft;
 import gamelogic.ChessGame;
 import gamelogic.pieces.Piece;
 
@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 
 public class tempGui extends JFrame {
 
-    private String fen = "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 0 1";
+    private String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     private final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
@@ -79,28 +79,9 @@ public class tempGui extends JFrame {
 
         pieceImage = new PiecesImage(buttonsBoard[0][0].getHeight());
 
+        //Perft.generalTest();
         updateBoard();
-        testPosition();
-    }
 
-    private void testPosition() {
-        String[] perftArray = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ",
-                "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ",
-                "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
-                "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
-                "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 "};
-
-        int[] depthArray  = {7,6,8,6,5,6};
-
-        GameEngine engine = new GameEngine();
-
-        for (int i = 0; i < perftArray.length; i++) {
-            System.out.println();
-            System.out.println("--------        Starting test perft " + (i + 1) + "--------        ");
-            game.reset(perftArray[i]);
-            engine.perft(depthArray[i]-2, game);
-        }
     }
 
     // AddButtonListener inner class
@@ -117,8 +98,7 @@ public class tempGui extends JFrame {
             fen = fenStringText.getText();
             game.reset(fen);
             updateBoard();
-            GameEngine engine = new GameEngine();
-            engine.perft(Integer.parseInt(depthText.getText()), game);
+            Perft.perft(Integer.parseInt(depthText.getText()), game);
         }
     }
 
@@ -175,7 +155,7 @@ public class tempGui extends JFrame {
     private void boardButtonClicked(int currRow, int curCol) {
         if (preSquare == -1) {
             byte square = (byte) ((currRow * 8) + curCol);
-            long movement = game.getMovesAsBitBoard(square);
+            long movement = game.getLegalMovesAsBitBoard(square);
             if (movement != 0) {
                 paintPieceMoveSquares(convertLongMovementToArr(movement));
                 preSquare = square;

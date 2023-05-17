@@ -1,5 +1,7 @@
 package gamelogic.pieces;
 
+import gamelogic.GameLogicUtilities;
+
 // Class that represent a pawn
 public class Pawn extends Piece {
     public Pawn(byte square, boolean color) {
@@ -16,7 +18,7 @@ public class Pawn extends Piece {
     @Override
     public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
         long pawnAttackSquares = getPawnAttackSquare();
-        long enemyKingBitBoardPosition = utils.getSquarePositionAsBitboardPosition(enemyKingSquare);
+        long enemyKingBitBoardPosition = GameLogicUtilities.getSquarePositionAsBitboardPosition(enemyKingSquare);
         if ((pawnAttackSquares & enemyKingBitBoardPosition) != 0)
             return getSquareAsBitBoard();
 

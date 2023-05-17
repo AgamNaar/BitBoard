@@ -1,5 +1,5 @@
+import gamelogic.GameLogicUtilities;
 import gamelogic.pieces.*;
-import gamelogic.BoardUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Objects;
 
-import static gamelogic.BoardUtils.WHITE;
+import static gamelogic.GameLogicUtilities.WHITE;
 
 // A class that represent an object that gets image of the pieces from the folders
 public class PiecesImage {
@@ -40,13 +40,14 @@ public class PiecesImage {
             for (final File f : Objects.requireNonNull(dir.listFiles(IMAGE_FILTER))) {
                 try {
                     // insert the image to the right place on the collection
-                    insertImageToCollection(f,size);
+                    insertImageToCollection(f, size);
                 } catch (final IOException e) {
                     System.out.println("error test");
                 }
             }
         }
     }
+
     private static final String[] EXTENSIONS = new String[]{"gif", "png", "bmp"};
 
     // filter to identify images based on their extensions
@@ -78,12 +79,12 @@ public class PiecesImage {
         }
 
         // from file name get the color of the piece
-        color = fileName.charAt(0) == 'W' ? WHITE : BoardUtils.BLACK;
+        color = fileName.charAt(0) == 'W' ? WHITE : GameLogicUtilities.BLACK;
 
         if (color == WHITE)
-            whitePiecesImages[type] = ImageIO.read(f).getScaledInstance(size,size,Image.SCALE_SMOOTH);
+            whitePiecesImages[type] = ImageIO.read(f).getScaledInstance(size, size, Image.SCALE_SMOOTH);
         else
-            blackPiecesImages[type] = ImageIO.read(f).getScaledInstance(size,size,Image.SCALE_SMOOTH);
+            blackPiecesImages[type] = ImageIO.read(f).getScaledInstance(size, size, Image.SCALE_SMOOTH);
     }
 
     // return the collection of images from the file

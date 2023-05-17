@@ -1,6 +1,6 @@
 package gamelogic.pieces;
 
-import gamelogic.BoardUtils;
+import gamelogic.GameLogicUtilities;
 
 // Abstract class that represent a piece, has 2 attributes
 // Color - color of the piece (white/black - true/false)
@@ -12,7 +12,6 @@ public abstract class Piece implements Cloneable {
 
     protected static final PieceThreateningLine threateningLine = new PieceThreateningLine();
     protected static final PieceMovement pieceMovement = new PieceMovement();
-    protected static final BoardUtils utils = new BoardUtils();
 
     public Piece(byte square, boolean color) {
         this.square = square;
@@ -29,13 +28,13 @@ public abstract class Piece implements Cloneable {
     treat line - if the piece threat the king, or if an enemy piece block the piece from threading the king
     the treat line will be all the square from the piece to the king as bitboards
     if more than 1 piece block a piece from treating, or the king is not even on the attack line, return 0
-    for pawn and a rook, a threat line is if they check the king, and the only square of the threat line will be their square
+    for pawns and a knight, a threat line is if they check the king, and the threat line is their square
     */
     public abstract long getThreatLines(byte enemyKingSquare, Long boardBitBoard);
 
     // Return the position of the piece as bitboard
     public long getSquareAsBitBoard() {
-        return utils.getSquarePositionAsBitboardPosition(square);
+        return GameLogicUtilities.getSquarePositionAsBitboardPosition(square);
     }
 
     // getter and setter methods

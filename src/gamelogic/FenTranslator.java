@@ -73,7 +73,7 @@ public class FenTranslator {
             // Convert chess square (i.e c3,a4...), to number square
             int column = fenStringValue.charAt(indexPosition++) - 'h';
             int row = Character.getNumericValue(fenStringValue.charAt(indexPosition));
-            enPassantTargetSquare = (byte) (column + (row * BoardUtils.BOARD_EDGE_SIZE));
+            enPassantTargetSquare = (byte) (column + (row * GameLogicUtilities.BOARD_EDGE_SIZE));
         }
     }
 
@@ -98,21 +98,23 @@ public class FenTranslator {
 
     // extract from the fen all the pieces, their type, color and position, and save them as a list
     private int extractPiecePlacement(int indexPosition) {
-        int square = BoardUtils.BOARD_SIZE - 1;
+        int square = GameLogicUtilities.BOARD_SIZE - 1;
 
         // Run on the entire section of the fen that is tell the pieces position
-        // its start with square 64 (top most left square), and each char tell what piece it is, number means empty square and '/' mean end of row
+        // its start with square 64 (top most left square), and each char tell what piece it is,
+        // number means empty square and '/' mean end of row
         // after counter ran from 63 to 0 we get all the pieces
         while (square > -1) {
             char currChar = fenStringValue.charAt(indexPosition);
             // If it's a digit skip that amount of squares
             if (Character.isDigit(currChar))
                 square = square - Character.getNumericValue(currChar);
-            else if (currChar != '/') { // It's a piece, get its fen type, and if its upper case its white, lower is black
+            else if (currChar != '/') {
+                // It's a piece, get its fen type, and if its upper case its white, lower is black
                 if (Character.isUpperCase(currChar))
-                    insertFenCharIntoBitBoards(currChar, (byte) square, BoardUtils.WHITE);
+                    insertFenCharIntoBitBoards(currChar, (byte) square, GameLogicUtilities.WHITE);
                 else
-                    insertFenCharIntoBitBoards(currChar, (byte) square, BoardUtils.BLACK);
+                    insertFenCharIntoBitBoards(currChar, (byte) square, GameLogicUtilities.BLACK);
                 square--;
             }
             indexPosition++;

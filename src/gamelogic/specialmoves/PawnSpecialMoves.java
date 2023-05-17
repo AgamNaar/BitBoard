@@ -1,13 +1,13 @@
 package gamelogic.specialmoves;
 
-import gamelogic.BoardUtils;
 import gamelogic.ChessGame;
+import gamelogic.GameLogicUtilities;
 import gamelogic.pieces.*;
 
 import java.util.LinkedList;
 
-import static gamelogic.BoardUtils.BLACK_PAWN_MOVE_OFFSET;
-import static gamelogic.BoardUtils.WHITE_PAWN_MOVE_OFFSET;
+import static gamelogic.GameLogicUtilities.BLACK_PAWN_MOVE_OFFSET;
+import static gamelogic.GameLogicUtilities.WHITE_PAWN_MOVE_OFFSET;
 
 // Class that is responsible for updating, executing and giving the special moves a pawn can do
 // special moves for pawns: en-passant and promotion
@@ -19,7 +19,6 @@ public class PawnSpecialMoves {
     private static final int PAWN_DOUBLE_MOVE_OFFSET = 16;
     private static final byte LAST_ROW_WHITE = 55;
     private static final byte LAST_ROW_BLACK = 8;
-    private static final BoardUtils utils = new BoardUtils();
 
     public PawnSpecialMoves(byte enPassantTargetSquare) {
         this.enPassantTargetSquare = enPassantTargetSquare;
@@ -32,12 +31,18 @@ public class PawnSpecialMoves {
     // Can do en passant if target square of en passant is one of its possible attack squares
     // Check that en-passant won't expose king to check
     public long getMoves(Piece piece, LinkedList<Piece> pieceList, long allPieceBitboard,
-                         boolean colorOfPlayersTurn) {
+                         boolean colorOfPlayersTurn, Piece king) {
+
+        long enPassantTargetSquareBitBoard = 0;
+
         // If the move expose to check from a rook it's not valid, return 0
-        if (doesExposeToRookCheck(piece.getSquare(), pieceList, allPieceBitboard, colorOfPlayersTurn))
+        if (doesExposeToRookCheck(piece.getSquare(), pieceList, allPieceBitboard, colorOfPlayersTurn, king))
             return 0;
 
-        long enPassantTargetSquareBitBoard = utils.getSquarePositionAsBitboardPosition(enPassantTargetSquare);
+        if (enPassantTargetSquare != NO_EN_PASSANT_TARGET_SQUARE)
+            enPassantTargetSquareBitBoard = GameLogicUtilities.
+                    getSquarePositionAsBitboardPosition(enPassantTargetSquare);
+
         long pawnAttackSquare = piece.getPieceMovement().getPawnCaptureSquare(piece.getColor(), piece.getSquare());
         return pawnAttackSquare & enPassantTargetSquareBitBoard;
     }
@@ -70,7 +75,7 @@ public class PawnSpecialMoves {
         byte enPassantPawnToCaptureSquare = (byte) (targetSquare + (pieceBoard[currentSquare].getColor()
                 ? BLACK_PAWN_MOVE_OFFSET : WHITE_PAWN_MOVE_OFFSET));
 
-        utils.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
+        GameLogicUtilities.updatePiecePosition(targetSquare, currentSquare, pieceBoard, pieceList);
         // Remove the captured pawn from list and board
         pieceList.remove(pieceBoard[enPassantPawnToCaptureSquare]);
         pieceBoard[enPassantPawnToCaptureSquare] = null;
@@ -125,10 +130,9 @@ public class PawnSpecialMoves {
 
     // While doing en-passant it can cuz a special situating where it will expose the king to a check from a rook
     private boolean doesExposeToRookCheck(byte currentSquare, LinkedList<Piece> pieceList,
-                                          long allPieceBitboard, boolean colorOfPlayersTurn) {
+                                          long allPieceBitboard, boolean colorOfPlayersTurn, Piece myKing) {
 
-        long rowMask = 0xffL << (utils.getRowOfSquare(currentSquare) * 8);
-        Piece myKing = utils.getKing(colorOfPlayersTurn, pieceList);
+        long rowMask = 0xffL << (GameLogicUtilities.getRowOfSquare(currentSquare) * 8);
         long currentPosition;
 
         // If the king isn't in the same row as the pawn, it can't be exposed to check
@@ -141,16 +145,15 @@ public class PawnSpecialMoves {
                     && (piece.getSquareAsBitBoard() & rowMask) != 0) {
 
                 int counter = 0, offset = myKing.getSquare() > piece.getSquare() ? -1 : 1;
-                currentPosition = utils.shiftNumberLeft(myKing.getSquareAsBitBoard(), offset);
+                currentPosition = GameLogicUtilities.shiftNumberLeft(myKing.getSquareAsBitBoard(), offset);
 
                 // Check how many piece there are between the king and the rook
                 while (currentPosition != piece.getSquareAsBitBoard()) {
                     if ((currentPosition & allPieceBitboard) != 0)
                         counter++;
 
-                    currentPosition = utils.shiftNumberLeft(currentPosition, offset);
+                    currentPosition = GameLogicUtilities.shiftNumberLeft(currentPosition, offset);
                 }
-
                 // only 2 pieces, return true
                 if (counter == 2)
                     return true;
