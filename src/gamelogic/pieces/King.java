@@ -16,4 +16,10 @@ public class King extends Piece {
     public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
         return 0;
     }
+
+    //TODO: finish
+    @Override
+    public int getPieceValue(long allPieceBitBoard) {
+        return 0;
+    }
 }

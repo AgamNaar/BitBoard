@@ -1,6 +1,7 @@
 package gamelogic.pieces;
 
 import gamelogic.GameLogicUtilities;
+import gamelogic.MovementData;
 import gamelogic.preemptivecalculators.PieceMovementPreemptiveCalculator;
 
 import java.util.ArrayList;
@@ -11,8 +12,8 @@ import static gamelogic.GameLogicUtilities.WHITE_PAWN_MOVE_OFFSET;
 // Class that provide movement for pieces given their position, and bitboards that represent the state of the board
 public class PieceMovement {
     private static final long[] KING_MOVES = new long[GameLogicUtilities.BOARD_SIZE];
-    private static final ArrayList<HashMap<Long, Long>> ROOK_MOVES = new ArrayList<>();
-    private static final ArrayList<HashMap<Long, Long>> BISHOP_MOVES = new ArrayList<>();
+    private static final ArrayList<HashMap<Long, MovementData>> ROOK_MOVES = new ArrayList<>();
+    private static final ArrayList<HashMap<Long, MovementData>> BISHOP_MOVES = new ArrayList<>();
     private static final long[] KNIGHT_MOVES = new long[GameLogicUtilities.BOARD_SIZE];
     private static final long[] WHITE_PAWN_ONLY_MOVES = new long[GameLogicUtilities.BOARD_SIZE];
     private static final long[] WHITE_PAWN_CAPTURE = new long[GameLogicUtilities.BOARD_SIZE];
@@ -63,8 +64,16 @@ public class PieceMovement {
     public long getRookMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Bit Board & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = PieceMovementPreemptiveCalculator.ROOK_MASK[piecePosition] & allPiecesBitBoard;
-        long moves = ROOK_MOVES.get(piecePosition).get(keyVal);
+        long moves = ROOK_MOVES.get(piecePosition).get(keyVal).bitBoardMovement;
         return moves & ~sameColorPieceBitBoard;
+    }
+
+    // Given a position of a rook and a bitboard of all pieces with the same color and a bitboard of all pieces
+    // Return the number of moves a rook can make
+    public int getNumberOfRookMovement(byte piecePosition, long allPiecesBitBoard) {
+        // Bit Board & mask val - key to move for that position, and remove square with same color pieces
+        long keyVal = PieceMovementPreemptiveCalculator.ROOK_MASK[piecePosition] & allPiecesBitBoard;
+        return ROOK_MOVES.get(piecePosition).get(keyVal).numberOfMovesPieceCanDo;
     }
 
     // Given a position of a bishop and a bitboard of the pieces with the same color and a bitboard of all pieces
@@ -72,8 +81,16 @@ public class PieceMovement {
     public long getBishopMovement(byte piecePosition, long allPiecesBitBoard, long sameColorPieceBitBoard) {
         // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
         long keyVal = PieceMovementPreemptiveCalculator.BISHOP_MASK[piecePosition] & allPiecesBitBoard;
-        long moves = BISHOP_MOVES.get(piecePosition).get(keyVal);
+        long moves = BISHOP_MOVES.get(piecePosition).get(keyVal).bitBoardMovement;
         return moves & ~sameColorPieceBitBoard;
+    }
+
+    // Given a position of a bishop and a bitboard of the pieces with the same color and a bitboard of all pieces
+    // Return the number of moves a bishop can make
+    public int getNumberOfBishopMovement(byte piecePosition, long allPiecesBitBoard) {
+        // Calculate the bitBoard & mask val - key to move for that position, and remove square with same color pieces
+        long keyVal = PieceMovementPreemptiveCalculator.BISHOP_MASK[piecePosition] & allPiecesBitBoard;
+        return BISHOP_MOVES.get(piecePosition).get(keyVal).numberOfMovesPieceCanDo;
     }
 
     // Given a position of a knight and a bitboard of all the pieces with the same color,

@@ -12,6 +12,11 @@ public class Bishop extends Piece {
     }
 
     @Override
+    public int getPieceValue(long allPieceBitBoard) {
+        return pieceEvaluation.evaluateBishop(this, allPieceBitBoard);
+    }
+
+    @Override
     public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
         return pieceMovement.getBishopMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }

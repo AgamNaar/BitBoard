@@ -1,6 +1,7 @@
 package gamelogic.preemptivecalculators;
 
 import gamelogic.GameLogicUtilities;
+import gamelogic.MovementData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +38,8 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
     // Change rook/bishop moves that, in each cell of the array,
     // there is a hashmap that has the bitBoard movement for each row+column or diagonal
     // The value of row+column or diagonal is the key to that value of bitBoard movement
-    public void generateLinePieceMoves(ArrayList<HashMap<Long, Long>> rookMoves,
-                                       ArrayList<HashMap<Long, Long>> bishopMoves) {
+    public void generateLinePieceMoves(ArrayList<HashMap<Long, MovementData>> rookMoves,
+                                       ArrayList<HashMap<Long, MovementData>> bishopMoves) {
 
         generateAllMovesLinePiece(rookMoves, bishopMoves);
     }
@@ -96,8 +97,8 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
     }
 
     // Generate moves for each square of the board for line pieces (Rook, Bishop)
-    private void generateAllMovesLinePiece(ArrayList<HashMap<Long, Long>> moveListRook,
-                                           ArrayList<HashMap<Long, Long>> moveListBishop) {
+    private void generateAllMovesLinePiece(ArrayList<HashMap<Long, MovementData>> moveListRook,
+                                           ArrayList<HashMap<Long, MovementData>> moveListBishop) {
 
         // For each square, for each possible values of rows and columns, get the movement it can do
         for (byte pieceSquare = 0; pieceSquare < GameLogicUtilities.BOARD_SIZE; pieceSquare++) {
@@ -105,9 +106,9 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
                 for (int columnValue = 0; columnValue < NUMBER_OF_POSSIBLE_VALUES_PER_EDGE; columnValue++) {
                     long rookMap = toBitMapRook(pieceSquare, rowValue, columnValue);
                     long bishopMap = toBitMapBishop(pieceSquare, rowValue, columnValue);
-                    long movesRook = generateMovesLinePiece(pieceSquare, ROOK_OFFSETS, rookMap,
+                    MovementData movesRook = generateMovesLinePiece(pieceSquare, ROOK_OFFSETS, rookMap,
                             getDistanceTillEdgeOfBoard(pieceSquare));
-                    long movesBishop = generateMovesLinePiece(pieceSquare, BISHOP_OFFSETS, bishopMap,
+                    MovementData movesBishop = generateMovesLinePiece(pieceSquare, BISHOP_OFFSETS, bishopMap,
                             getDistanceTillEdgeOfBoardBishop(pieceSquare));
                     moveListRook.get(pieceSquare).put(rookMap, movesRook);
                     moveListBishop.get(pieceSquare).put(bishopMap, movesBishop);
@@ -118,8 +119,9 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
 
     // Given a pieceSquare, an array of offsets and a long that represent the current board
     // Return a long with all the possible moves a piece with does offset can do on that board
-    private long generateMovesLinePiece(byte pieceSquare, byte[] offsetArray, long bitBoard, byte[] movesTillEdge) {
+    private MovementData generateMovesLinePiece(byte pieceSquare, byte[] offsetArray, long bitBoard, byte[] movesTillEdge) {
         long positionBit = GameLogicUtilities.getSquarePositionAsBitboardPosition(pieceSquare), result = 0;
+        int counter = 0;
         for (byte i = 0; i < offsetArray.length; i++) {
             // Run until the edge of the board or found a piece
             for (byte j = 1; j <= movesTillEdge[i]; j++) {
@@ -128,12 +130,15 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
                 // if not 0, piece on that position, 0 mean position empty
                 if ((currentBit & bitBoard) != 0) {
                     result |= currentBit;
+                    counter++;
                     break;
-                } else
+                } else {
+                    counter++;
                     result |= currentBit;
+                }
             }
         }
-        return result;
+        return new MovementData(result, counter);
     }
 
     // Given an offset and a pieceSquare, check if that offset from that pieceSquare is not bigger than max dx dy

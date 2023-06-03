@@ -11,7 +11,7 @@ import java.util.LinkedList;
 public class ChessGame {
     private boolean colorOfPlayersTurn;
     private LinkedList<Piece> pieceList;
-    private final Piece[] pieceBoard = new Piece[GameLogicUtilities.BOARD_SIZE];
+    private Piece[] pieceBoard;
     private long playerTurnPiecesBitBoard;
     private long allPiecesBitBoard;
     Piece currentPlayerKing;
@@ -36,6 +36,7 @@ public class ChessGame {
 
     // Reset the game to default start up
     public void reset(String fen) {
+        pieceBoard = new Piece[GameLogicUtilities.BOARD_SIZE];
         FenTranslator translator;
         if (fen == null || fen.trim().isEmpty())
             translator = new FenTranslator();

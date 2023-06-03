@@ -25,6 +25,12 @@ public class Pawn extends Piece {
         return 0;
     }
 
+    //TODO: finish
+    @Override
+    public int getPieceValue(long allPieceBitBoard) {
+        return 0;
+    }
+
     // Return the attack square of the pawn as bitboards
     public long getPawnAttackSquare() {
         return pieceMovement.getPawnCaptureSquare(getColor(), getSquare());

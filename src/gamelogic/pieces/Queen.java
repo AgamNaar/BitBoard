@@ -12,6 +12,11 @@ public class Queen extends Piece {
     }
 
     @Override
+    public int getPieceValue(long allPieceBitBoard) {
+        return pieceEvaluation.evaluateQueen(this, allPieceBitBoard);
+    }
+
+    @Override
     public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
         return pieceMovement.getQueenMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }

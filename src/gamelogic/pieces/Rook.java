@@ -12,6 +12,11 @@ public class Rook extends Piece {
     }
 
     @Override
+    public int getPieceValue(long allPieceBitBoard) {
+        return pieceEvaluation.evaluateRook(this, allPieceBitBoard);
+    }
+
+    @Override
     public long getMovesAsBitBoard(long allPiecesBitBoard, long sameColorPiecesBitBoard) {
         return pieceMovement.getRookMovement(getSquare(), allPiecesBitBoard, sameColorPiecesBitBoard);
     }

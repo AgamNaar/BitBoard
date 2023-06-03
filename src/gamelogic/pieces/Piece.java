@@ -13,6 +13,8 @@ public abstract class Piece implements Cloneable {
     protected static final PieceThreateningLine threateningLine = new PieceThreateningLine();
     protected static final PieceMovement pieceMovement = new PieceMovement();
 
+    protected static final PieceEvaluation pieceEvaluation = new PieceEvaluation();
+
     public Piece(byte square, boolean color) {
         this.square = square;
         this.color = color;
@@ -62,4 +64,7 @@ public abstract class Piece implements Cloneable {
             throw new AssertionError();
         }
     }
+
+    // Return the value of the piece given its position and state of the board
+    public abstract int getPieceValue(long allPieceBitBoard);
 }
