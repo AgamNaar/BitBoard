@@ -26,8 +26,7 @@ public class Knight extends Piece {
         return 0;
     }
 
-    //TODO: finish
     public int getPieceValue(long allPieceBitBoard) {
-        return 0;
+        return pieceEvaluation.evaluateKnight(this);
     }
 }

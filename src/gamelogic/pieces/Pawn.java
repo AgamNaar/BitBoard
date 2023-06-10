@@ -25,10 +25,10 @@ public class Pawn extends Piece {
         return 0;
     }
 
-    //TODO: finish
+
     @Override
     public int getPieceValue(long allPieceBitBoard) {
-        return 0;
+        return pieceEvaluation.evaluatePawn(this);
     }
 
     // Return the attack square of the pawn as bitboards

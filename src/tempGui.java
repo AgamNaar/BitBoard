@@ -1,3 +1,4 @@
+import gameengine.GameEngine;
 import gameengine.Perft;
 import gamelogic.ChessGame;
 import gamelogic.pieces.Piece;
@@ -166,7 +167,11 @@ public class tempGui extends JFrame {
             updateBoard();
             afterMoveHandle(gameStatus, targetSquare, currentSquare);
             preSquare = -1;
+            GameEngine gameEngine = new GameEngine();
+            gameEngine.evalPosition(game);
+            gameEngine.findBestMove(game, 4);
         }
+
     }
 
     private void afterMoveHandle(int gameStatus, byte targetSquare, byte currentSquare) {
@@ -176,16 +181,8 @@ public class tempGui extends JFrame {
         if (gameStatus == ChessGame.CHECK || gameStatus == ChessGame.CHECKMATE)
             paintSquare(Color.decode("#A44040"), game.getPlayerTurnKingSquare());
 
-        if (gameStatus == ChessGame.CHECK)
-            makeSound(gameStatus);
-
         paintSquare(Color.YELLOW, targetSquare);
         paintSquare(Color.YELLOW, currentSquare);
-
-    }
-
-    //TODO: for making sound
-    private void makeSound(int gameStatus) {
     }
 
     private void paintSquare(Color color, byte square) {

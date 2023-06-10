@@ -17,9 +17,8 @@ public class King extends Piece {
         return 0;
     }
 
-    //TODO: finish
     @Override
     public int getPieceValue(long allPieceBitBoard) {
-        return 0;
+        return pieceEvaluation.evaluateKingPosition(this);
     }
 }

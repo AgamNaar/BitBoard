@@ -8,12 +8,22 @@ public class PieceMove {
     private final byte targetSquare;
     private final char typeOfPieceToPromoteTo;
     private final boolean isAPawnMove;
+    private int moveValue;
 
     public PieceMove(byte piecePosition, byte targetSquare, char typeOfPieceToPromoteTo, boolean isAPawnMove) {
         this.piecePosition = piecePosition;
         this.targetSquare = targetSquare;
         this.typeOfPieceToPromoteTo = typeOfPieceToPromoteTo;
         this.isAPawnMove = isAPawnMove;
+    }
+
+    // Empty constructor
+    public PieceMove(int positionValue) {
+        piecePosition = 0;
+        targetSquare =0;
+        typeOfPieceToPromoteTo = 0;
+        isAPawnMove = false;
+        moveValue = positionValue;
     }
 
     public byte getPiecePosition() {
@@ -32,6 +42,11 @@ public class PieceMove {
         return positionToNotation(piecePosition) + positionToNotation(targetSquare);
     }
 
+    // Return string of the move with its move value
+    public String toStringWithMoveValue() {
+        return this + " move value: " + moveValue;
+    }
+
     // Return the notation of the byte square
     private String positionToNotation(byte position) {
         String row = String.valueOf((position / 8) + 1);
@@ -47,5 +62,13 @@ public class PieceMove {
     // Return the type of piece to promote
     public char getTypeOfPieceToPromoteTo() {
         return typeOfPieceToPromoteTo;
+    }
+
+    public int getMoveValue() {
+        return moveValue;
+    }
+
+    public void setMoveValue(int moveValue) {
+        this.moveValue = moveValue;
     }
 }

@@ -64,6 +64,7 @@ public class ChessGame {
 
     // TODO: temp create copy of a game chess until undo move
     public ChessGame(ChessGame game) {
+        pieceBoard = new Piece[GameLogicUtilities.BOARD_SIZE];
         colorOfPlayersTurn = game.getPlayerToPlay();
         pieceList = game.getPieceList();
         specialMovesHandler = new SpecialMovesHandler(game.specialMovesHandler);
@@ -116,7 +117,7 @@ public class ChessGame {
     }
 
     // get the status of the game - normal, check, draw or checkmate
-    private int getGameStatus() {
+    public int getGameStatus() {
         // Check if the enemy player is checked, checkmated or if it's a draw
         if (isPlayerChecked()) {
             if (doesPlayerHasLegalMovesToPlay(colorOfPlayersTurn))
@@ -181,6 +182,11 @@ public class ChessGame {
         return newPieceList;
     }
 
+    // Return all piece bitboard
+    public long getAllPieceBitBoard() {
+        return allPiecesBitBoard;
+    }
+
     public boolean getPlayerToPlay() {
         return colorOfPlayersTurn;
     }
@@ -223,4 +229,8 @@ public class ChessGame {
     }
 
 
+    public boolean isGameOver() {
+        int gameStatus = getGameStatus();
+        return gameStatus == DRAW || gameStatus == CHECKMATE;
+    }
 }
