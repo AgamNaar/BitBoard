@@ -18,7 +18,7 @@ public class King extends Piece {
     }
 
     @Override
-    public int getPieceValue(long allPieceBitBoard) {
-        return pieceEvaluation.evaluateKingPosition(this);
+    public int getPieceValue(long allPieceBitBoard, int gameStage) {
+        return pieceEvaluation.evaluateKingPosition(this, gameStage);
     }
 }

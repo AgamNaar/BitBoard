@@ -27,8 +27,8 @@ public class Pawn extends Piece {
 
 
     @Override
-    public int getPieceValue(long allPieceBitBoard) {
-        return pieceEvaluation.evaluatePawn(this);
+    public int getPieceValue(long allPieceBitBoard, int gameStage) {
+        return pieceEvaluation.evaluatePawn(this, gameStage);
     }
 
     // Return the attack square of the pawn as bitboards

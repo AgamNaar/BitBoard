@@ -66,5 +66,5 @@ public abstract class Piece implements Cloneable {
     }
 
     // Return the value of the piece given its position and state of the board
-    public abstract int getPieceValue(long allPieceBitBoard);
+    public abstract int getPieceValue(long allPieceBitBoard, int gameStage);
 }

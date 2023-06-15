@@ -12,8 +12,8 @@ public class Queen extends Piece {
     }
 
     @Override
-    public int getPieceValue(long allPieceBitBoard) {
-        return pieceEvaluation.evaluateQueen(this, allPieceBitBoard);
+    public int getPieceValue(long allPieceBitBoard, int gameStage) {
+        return pieceEvaluation.evaluateQueen(this, allPieceBitBoard, gameStage);
     }
 
     @Override

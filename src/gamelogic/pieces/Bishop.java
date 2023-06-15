@@ -12,7 +12,7 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public int getPieceValue(long allPieceBitBoard) {
+    public int getPieceValue(long allPieceBitBoard, int gameStage) {
         return pieceEvaluation.evaluateBishop(this, allPieceBitBoard);
     }
 
