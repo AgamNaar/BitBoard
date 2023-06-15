@@ -4,7 +4,8 @@ import gamelogic.ChessGame;
 
 import java.util.LinkedList;
 
-// Class responsible for Perft - "performance test, move path enumeration" for debugging purposes
+// Class responsible for Perft - "performance test, move path enumeration" for debugging purposes, and checking that
+// The game only find legal moves
 public class Perft {
 
     private static final String[] perftArray = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -37,7 +38,7 @@ public class Perft {
         // For each possible move in that position, play that move
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
-            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare(),
+            newGame.executeMove(pieceMove.getCurrentPieceSquare(), pieceMove.getTargetSquare(),
                     pieceMove.getTypeOfPieceToPromoteTo());
 
             if (depth == 1)
@@ -62,7 +63,7 @@ public class Perft {
         long numberOfMoves = 0;
         for (PieceMove pieceMove : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
-            newGame.executeMove(pieceMove.getPiecePosition(), pieceMove.getTargetSquare(),
+            newGame.executeMove(pieceMove.getCurrentPieceSquare(), pieceMove.getTargetSquare(),
                     pieceMove.getTypeOfPieceToPromoteTo());
 
             // Go to the position after the move has been played and check how many moves it can do
