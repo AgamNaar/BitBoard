@@ -1,45 +1,51 @@
 package gameengine;
 
-// Class that represent a move of a piece
+import gamelogic.pieces.Pawn;
+import gamelogic.pieces.Piece;
+
+/* Class that represent a move of a piece
+currentPieceSquare - Current square of the piece
+targetSquare - The square that the piece will go to
+typeOfPieceToPromoteTo - The type of piece to promote to, default for a queen
+pieceToMove - The piece that will do the move
+pieceToMoveValue - The value of the piece
+moveAssumedValue - The assumed value of how good will the move be
+moveValue - The value of the move, meaning in the best case and depth given, what will be the eval of the board
+ */
 public class PieceMove {
     private static final byte FIRST_SQUARE_ON_SECOND_ROW = 8;
     private static final int LAST_SQUARE_ON_7TH_ROW = 55;
-    private final byte piecePosition;
+
+    private final int pieceToMoveValue;
+    private final byte currentPieceSquare;
     private final byte targetSquare;
+
     private final char typeOfPieceToPromoteTo;
-    private final boolean isAPawnMove;
+    private final Piece pieceToMove;
+
+    private int moveAssumedValue;
     private int moveValue;
 
-    public PieceMove(byte piecePosition, byte targetSquare, char typeOfPieceToPromoteTo, boolean isAPawnMove) {
-        this.piecePosition = piecePosition;
+    public PieceMove(byte piecePosition, byte targetSquare, char typeOfPieceToPromoteTo, Piece piece,
+                     int pieceToMoveValue) {
+        this.currentPieceSquare = piecePosition;
         this.targetSquare = targetSquare;
         this.typeOfPieceToPromoteTo = typeOfPieceToPromoteTo;
-        this.isAPawnMove = isAPawnMove;
+        this.pieceToMoveValue = pieceToMoveValue;
+        this.pieceToMove = piece;
     }
 
-    // Empty constructor
-    public PieceMove(int positionValue) {
-        piecePosition = 0;
-        targetSquare =0;
-        typeOfPieceToPromoteTo = 0;
-        isAPawnMove = false;
-        moveValue = positionValue;
-    }
-
-    public byte getPiecePosition() {
-        return piecePosition;
-    }
-
-    public byte getTargetSquare() {
-        return targetSquare;
+    // Check if the target square is a promotion square
+    public boolean isItPromotionMove() {
+        return targetSquare < FIRST_SQUARE_ON_SECOND_ROW || targetSquare > LAST_SQUARE_ON_7TH_ROW;
     }
 
     @Override
     public String toString() {
         // If it's a promotion move, add the type of piece to promote
-        if (isItPromotionMove() && isAPawnMove)
-            return positionToNotation(piecePosition) + positionToNotation(targetSquare) + typeOfPieceToPromoteTo;
-        return positionToNotation(piecePosition) + positionToNotation(targetSquare);
+        if (isItPromotionMove() && pieceToMove instanceof Pawn)
+            return positionToNotation(currentPieceSquare) + positionToNotation(targetSquare) + typeOfPieceToPromoteTo;
+        return positionToNotation(currentPieceSquare) + positionToNotation(targetSquare);
     }
 
     // Return string of the move with its move value
@@ -50,16 +56,19 @@ public class PieceMove {
     // Return the notation of the byte square
     private String positionToNotation(byte position) {
         String row = String.valueOf((position / 8) + 1);
-        char colum = (char) ((7 - (position % 8)) + 'a');
-        return colum + row;
+        char column = (char) ((7 - (position % 8)) + 'a');
+        return column + row;
     }
 
-    // Check if the target square is a promotion square
-    public boolean isItPromotionMove() {
-        return targetSquare < FIRST_SQUARE_ON_SECOND_ROW || targetSquare > LAST_SQUARE_ON_7TH_ROW;
+    // Getter method
+    public byte getCurrentPieceSquare() {
+        return currentPieceSquare;
     }
 
-    // Return the type of piece to promote
+    public int getPieceToMoveValue() {
+        return pieceToMoveValue;
+    }
+
     public char getTypeOfPieceToPromoteTo() {
         return typeOfPieceToPromoteTo;
     }
@@ -68,7 +77,20 @@ public class PieceMove {
         return moveValue;
     }
 
+    public byte getTargetSquare() {
+        return targetSquare;
+    }
+
+    public int getMoveAssumedValue() {
+        return moveAssumedValue;
+    }
+
+    // Setter method
     public void setMoveValue(int moveValue) {
         this.moveValue = moveValue;
+    }
+
+    public void setMoveAssumedValue(int moveAssumedValue) {
+        this.moveAssumedValue = moveAssumedValue;
     }
 }
