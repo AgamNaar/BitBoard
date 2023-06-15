@@ -13,7 +13,7 @@ public class Rook extends Piece {
 
     @Override
     public int getPieceValue(long allPieceBitBoard, int gameStage) {
-        return pieceEvaluation.evaluateRook(this, allPieceBitBoard);
+        return pieceEvaluation.evaluateRook(this, allPieceBitBoard, gameStage);
     }
 
     @Override

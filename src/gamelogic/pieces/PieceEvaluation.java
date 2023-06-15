@@ -1,108 +1,60 @@
 package gamelogic.pieces;
 
+import gamelogic.ChessGame;
+
+
 // Responsible for evaluation pieces given their position and state of the board
 // The power of lines pieces depends on their activity - how many squares they attack, and their position on the board
-public class PieceEvaluation {
-
-    private static final int BISHOP_MOVEMENT_MULTIPLIER = 5;
-    private static final int ROOK_MOVEMENT_MULTIPLIER = 10;
-    private static final int QUEEN_MOVEMENT_MULTIPLIER = 12;
-
-    private static final int PAWN_INITIAL_POWER = 100;
-    private static final int KNIGHT_INITIAL_POWER = 200;
-    private static final int BISHOP_INITIAL_POWER = 200;
-    private static final int ROOK_INITIAL_POWER = 350;
-    private static final int QUEEN_INITIAL_POWER = 600;
-
-
-    private static final int[] ROOK_MAP = {15, 15, 15, 15, 15, 15, 15, 15,
-            5, -5, -15, -20, -20, -15, -5, 5,
-            5, -5, -15, -20, -20, -15, -5, 5,
-            5, -5, -15, -20, -20, -15, -5, 5,
-            5, -5, -15, -20, -20, -15, -5, 5,
-            5, -5, -15, -20, -20, -15, -5, 5,
-            30, 30, 30, 30, 30, 30, 30, 30,
-            20, 20, 20, 20, 20, 20, 20, 20};
-
-    private static final int[] BISHOP_MAP = {15, 10, 5, 0, 0, 5, 10, 15,
-            15, 15, 10, 5, 5, 10, 15, 15,
-            0, 5, 10, 10, 10, 10, 5, 0,
-            0, 5, 20, 15, 15, 20, 5, 0,
-            0, 5, 20, 15, 15, 20, 5, 0,
-            0, 5, 10, 10, 10, 10, 5, 0,
-            15, 15, 10, 5, 5, 10, 15, 15,
-            15, 10, 5, 0, 0, 5, 10, 15};
-
-    private static final int[] KNIGHT_MAP = {0, 5, 15, 25, 25, 15, 5, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            10, 60, 80, 100, 100, 80, 60, 10,
-            20, 80, 100, 130, 130, 100, 80, 20,
-            20, 80, 100, 130, 130, 100, 80, 10,
-            10, 60, 80, 100, 100, 80, 60, 20,
-            0, 5, 15, 25, 25, 15, 5, 0,
-            0, 0, 0, 0, 0, 0, 0, 0};
-
-    private static final int[] PAWN_MAP = {0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            70, 60, 60, 60, 60, 60, 60, 70,
-            55, 50, 50, 25, 25, 50, 50, 55,
-            0, 0, 15, 20, 20, 0, 0, 0,
-            0, 0, 10, 15, 15, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0};
-
-    private static final int[] NEGATIVE_KING_MAP_EARLY = {600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600,
-            600, 600, 600, 600, 600, 600, 600, 600,
-            400, 400, 400, 400, 400, 400, 400, 400,
-            200, 200, 200, 200, 200, 200, 200, 200,
-            100, 100, 100, 100, 100, 100, 100, 100,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            0, -20, -10, 5, 0, 5, -15, 0};
-
+public class PieceEvaluation extends PieceEvaluationConstants {
     private static final PieceMovement pieceMovement = new PieceMovement();
 
-
-    // Given a queen, and all piece bitboard, evaluate the power of the queen
-    public int evaluateQueen(Piece queen, long allPieceBitBoard) {
-        int totalValue = QUEEN_INITIAL_POWER + evaluateActivity(queen, QUEEN_MOVEMENT_MULTIPLIER, allPieceBitBoard);
+    // Given a queen, all piece bitboard and gameStage, evaluate the power of the queen
+    public int evaluateQueen(Piece queen, long allPieceBitBoard, int gameStage) {
+        int multiplayer = gameStage == ChessGame.END_GAME ? QUEEN_MOVEMENT_MULTIPLIER_END : QUEEN_MOVEMENT_MULTIPLIER_EARLY;
+        int totalValue = QUEEN_INITIAL_POWER + evaluateActivity(queen, multiplayer, allPieceBitBoard);
         totalValue += BISHOP_MAP[positionOnMapOfPiece(queen)];
         return totalValue;
     }
 
-    // Given a rook, and all piece bitboard, evaluate the power of the rook
-    public int evaluateRook(Piece rook, long allPiecesBitBoard) {
-        int totalValue = ROOK_INITIAL_POWER + evaluateActivity(rook, ROOK_MOVEMENT_MULTIPLIER, allPiecesBitBoard);
+    // Given a rook, all piece bitboard and gameStage, evaluate the power of the rook
+    public int evaluateRook(Piece rook, long allPiecesBitBoard, int gameStage) {
+        int multiplayer = gameStage == ChessGame.END_GAME ? ROOK_MOVEMENT_MULTIPLIER_END : ROOK_MOVEMENT_MULTIPLIER_EARLY;
+        int totalValue = ROOK_INITIAL_POWER + evaluateActivity(rook, multiplayer, allPiecesBitBoard);
         totalValue += ROOK_MAP[positionOnMapOfPiece(rook)];
         return totalValue;
     }
 
-    // Given a bishop, and all piece bitboard, evaluate the power of the bishop
+    // Given a bishop and all piece bitboard, evaluate the power of the bishop
     public int evaluateBishop(Piece bishop, long allPiecesBitBoard) {
         int totalValue = BISHOP_INITIAL_POWER + evaluateActivity(bishop, BISHOP_MOVEMENT_MULTIPLIER, allPiecesBitBoard);
         totalValue += BISHOP_MAP[bishop.getSquare()];
         return totalValue;
     }
 
-    // Given a bishop, and all piece bitboard, evaluate the power of the bishop
+    // Given a knight and stage game, evaluate the power of the bishop
     public int evaluateKnight(Piece knight) {
         return KNIGHT_INITIAL_POWER + KNIGHT_MAP[knight.getSquare()];
     }
 
-    // Given a pawn, and all piece bitboard, evaluate the power of the pawn
-    public int evaluatePawn(Piece pawn) {
-        return PAWN_INITIAL_POWER + PAWN_MAP[positionOnMapOfPiece(pawn)];
+    // Given a pawn, game stage and all piece bitboard, evaluate the power of the pawn
+    public int evaluatePawn(Piece pawn, int gameStage) {
+        if (gameStage == ChessGame.END_GAME)
+            return PAWN_INITIAL_POWER + PAWN_MAP_END[positionOnMapOfPiece(pawn)];
+
+        return PAWN_INITIAL_POWER + PAWN_MAP_EARLY[positionOnMapOfPiece(pawn)];
     }
 
-    // Given a king, and all piece bitboard, evaluate the power of the king
-    // TODO: add late game map
-    public int evaluateKingPosition(Piece king) {
+    // Given a king, game stage and all piece bitboard, evaluate the power of the king
+    public int evaluateKingPosition(Piece king, int gameStage) {
+        if (gameStage == ChessGame.END_GAME)
+            return -NEGATIVE_KING_MAP_END[positionOnMapOfPiece(king)];
+
         return -NEGATIVE_KING_MAP_EARLY[positionOnMapOfPiece(king)];
     }
 
     // If white return piece position, if black return piece 63-position
     private int positionOnMapOfPiece(Piece piece) {
-        return piece.getColor() ? piece.getSquare() : 63 - piece.getSquare();
+        return piece.getColor() ? 63 - piece.getSquare() : piece.getSquare();
     }
 
 
@@ -121,6 +73,4 @@ public class PieceEvaluation {
 
         return numberOfMoves * movementMultiplier;
     }
-
-
 }
