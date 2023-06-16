@@ -28,6 +28,9 @@ public class ChessGame {
     public static final char PROMOTE_TO_ROOK = 'r';
     public static final char PROMOTE_TO_KNIGHT = 'n';
     public static final char PROMOTE_TO_BISHOP = 'b';
+    public static final int EARLY_GAME = 0;
+    public static final int MID_GAME = 1;
+    public static final int END_GAME = 2;
 
     // Initialize a game of chess using a fen
     public ChessGame(String fen) {
@@ -144,7 +147,7 @@ public class ChessGame {
 
     // Return as bit board all the square that are currently threatened by enemy player
     private long getBitBoardOfSquaresThreatenByEnemy() {
-        long movementBitBoard = 0, enemyBitBoard = enemyBitBoard();
+        long movementBitBoard = 0, enemyBitBoard = getEnemyBitBoard();
         for (Piece piece : pieceList)
             if (piece.getColor() == !colorOfPlayersTurn)
                 if (piece instanceof Pawn)
@@ -161,16 +164,16 @@ public class ChessGame {
         return (currentPlayerKing.getSquareAsBitBoard() & getBitBoardOfSquaresThreatenByEnemy()) != 0;
     }
 
-    // Return the pieces of the enemy as bitboard
-    private long enemyBitBoard() {
-        return allPiecesBitBoard & ~playerTurnPiecesBitBoard;
+    // Return if the game is over, either a draw or a chec mate
+    public boolean isGameOver() {
+        int gameStatus = getGameStatus();
+        return gameStatus == DRAW || gameStatus == CHECKMATE;
     }
-
     // Getter methods
 
-    // Return a copy of the board of all the pieces
-    public Piece[] getPieceBoard() {
-        return pieceBoard.clone();
+    // Given a square, return the piece on that square
+    public Piece getPiece(int position) {
+        return pieceBoard[position];
     }
 
     // Return a copy of the list of all the pieces
@@ -187,12 +190,37 @@ public class ChessGame {
         return allPiecesBitBoard;
     }
 
+    // Return same color piece bitboard
+    public long getSameColorPieceBitBoard() {
+        return playerTurnPiecesBitBoard;
+    }
+
+    // Return the pieces of the enemy as bitboard
+    public long getEnemyBitBoard() {
+        return allPiecesBitBoard & ~playerTurnPiecesBitBoard;
+    }
+
+    // Return true if its white turn to play or false if it's black
     public boolean getPlayerToPlay() {
         return colorOfPlayersTurn;
     }
 
+    // Return the current player's king square
     public byte getPlayerTurnKingSquare() {
         return currentPlayerKing.getSquare();
+    }
+
+    // Return the stage of the game, early game, mid-game, end game
+    public int getStage() {
+        //TODO: for now its a demo function
+        int numberOfPiece = pieceList.size();
+        if (numberOfPiece > 28)
+            return EARLY_GAME;
+        if (numberOfPiece > 12)
+            return MID_GAME;
+
+        return EARLY_GAME;
+
     }
 
     // Update parameters functions
@@ -201,7 +229,7 @@ public class ChessGame {
     private void updateAttributes() {
         updateCurrentKing();
         updateBitBoards();
-        legalMoveHandler.updateTreatingLines(pieceList, allPiecesBitBoard, enemyBitBoard(),
+        legalMoveHandler.updateTreatingLines(pieceList, allPiecesBitBoard, getEnemyBitBoard(),
                 colorOfPlayersTurn, currentPlayerKing);
     }
 
@@ -226,11 +254,5 @@ public class ChessGame {
 
             allPiecesBitBoard |= pieceBitBoardPosition;
         }
-    }
-
-
-    public boolean isGameOver() {
-        int gameStatus = getGameStatus();
-        return gameStatus == DRAW || gameStatus == CHECKMATE;
     }
 }
