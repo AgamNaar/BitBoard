@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BitBoardChess:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BitBoardChess_jar</output-path>
+    <root id="archive" name="BitBoardChess.jar">
+      <element id="module-output" name="BitBoardChess" />
+    </root>
+  </artifact>
+</component>

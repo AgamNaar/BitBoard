@@ -8,18 +8,28 @@ import java.util.LinkedList;
 // Class responsible for evaluating a board, the higher the eval, the better it is for white
 public class GameEvaluater {
 
+    public static final int WHITE_GET_CHECK_MATE = Integer.MIN_VALUE + 2000;
+    public static final int BLACK_GET_CHECK_MATE = Integer.MAX_VALUE - 2000;
+
+
     // Given a chess game, return an evaluation of the game
-    public int evaluateGame(ChessGame game) {
-        // If game status is check mate, return MAX_VALUE for the winner
+    public int evaluateGame(ChessGame game, int currentDepth) {
+        // If white get check mated, return WHITE_GET_CHECK_MATE + currentDepth, that way faster mate will be chosen
         int gameStatus = game.getGameStatus();
         if (gameStatus == ChessGame.CHECKMATE)
             if (game.getPlayerToPlay())
-                return Integer.MIN_VALUE;
+                return WHITE_GET_CHECK_MATE + currentDepth;
             else
-                return Integer.MAX_VALUE;
+                return BLACK_GET_CHECK_MATE - currentDepth;
 
+        // Draw, return 0
+        if (gameStatus == ChessGame.DRAW)
+            return 0;
+
+        // Evaluate the board
+        // TODO: for now only evaluate pieces activity and position
         int eval = 0;
-        eval = evaluatePieceValue(new ChessGame(game), eval);
+        eval = evaluatePieceValue(game, eval);
 
         return eval;
     }
@@ -29,12 +39,14 @@ public class GameEvaluater {
         long allPieceBitBoard = game.getAllPieceBitBoard();
         LinkedList<Piece> list = game.getPieceList();
 
+        int gameStage = game.getStage();
+
         // For white pieces add to the eval, for black subtract
         for (Piece piece : list)
             if (piece.getColor())
-                eval += piece.getPieceValue(allPieceBitBoard);
+                eval += piece.getPieceValue(allPieceBitBoard, gameStage);
             else
-                eval -= piece.getPieceValue(allPieceBitBoard);
+                eval -= piece.getPieceValue(allPieceBitBoard, gameStage);
 
         return eval;
     }
