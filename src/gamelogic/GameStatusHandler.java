@@ -68,7 +68,7 @@ public class GameStatusHandler {
         if (numberOfPiece > 12)
             return MID_GAME;
 
-        return gameStage;
+        return END_GAME;
     }
 
     // Check if a repetition of moves has occurs, if yes return true

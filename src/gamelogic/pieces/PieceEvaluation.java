@@ -1,6 +1,6 @@
 package gamelogic.pieces;
 
-import gamelogic.ChessGame;
+import static gamelogic.GameStatusHandler.END_GAME;
 
 
 // Responsible for evaluation pieces given their position and state of the board
@@ -10,7 +10,7 @@ public class PieceEvaluation extends PieceEvaluationConstants {
 
     // Given a queen, all piece bitboard and gameStage, evaluate the power of the queen
     public int evaluateQueen(Piece queen, long allPieceBitBoard, int gameStage) {
-        int multiplayer = gameStage == ChessGame.END_GAME ? QUEEN_MOVEMENT_MULTIPLIER_END : QUEEN_MOVEMENT_MULTIPLIER_EARLY;
+        int multiplayer = gameStage == END_GAME ? QUEEN_MOVEMENT_MULTIPLIER_END : QUEEN_MOVEMENT_MULTIPLIER_EARLY;
         int totalValue = QUEEN_INITIAL_POWER + evaluateActivity(queen, multiplayer, allPieceBitBoard);
         totalValue += BISHOP_MAP[positionOnMapOfPiece(queen)];
         return totalValue;
@@ -18,7 +18,7 @@ public class PieceEvaluation extends PieceEvaluationConstants {
 
     // Given a rook, all piece bitboard and gameStage, evaluate the power of the rook
     public int evaluateRook(Piece rook, long allPiecesBitBoard, int gameStage) {
-        int multiplayer = gameStage == ChessGame.END_GAME ? ROOK_MOVEMENT_MULTIPLIER_END : ROOK_MOVEMENT_MULTIPLIER_EARLY;
+        int multiplayer = gameStage == END_GAME ? ROOK_MOVEMENT_MULTIPLIER_END : ROOK_MOVEMENT_MULTIPLIER_EARLY;
         int totalValue = ROOK_INITIAL_POWER + evaluateActivity(rook, multiplayer, allPiecesBitBoard);
         totalValue += ROOK_MAP[positionOnMapOfPiece(rook)];
         return totalValue;
@@ -32,24 +32,24 @@ public class PieceEvaluation extends PieceEvaluationConstants {
     }
 
     // Given a knight and stage game, evaluate the power of the bishop
-    public int evaluateKnight(Piece knight) {
-        return KNIGHT_INITIAL_POWER + KNIGHT_MAP[knight.getSquare()];
+    public int evaluateKnight(Piece knight, int gameStage) {
+        return KNIGHT_INITIAL_POWER + KNIGHT_MAPS[gameStage][knight.getSquare()];
     }
 
     // Given a pawn, game stage and all piece bitboard, evaluate the power of the pawn
     public int evaluatePawn(Piece pawn, int gameStage) {
-        if (gameStage == ChessGame.END_GAME)
-            return PAWN_INITIAL_POWER + PAWN_MAP_END[positionOnMapOfPiece(pawn)];
+        if (pawn.getColor())
+            return PAWN_MAPS_WHITE[gameStage][positionOnMapOfPiece(pawn)] + PAWN_INITIAL_POWER;
 
-        return PAWN_INITIAL_POWER + PAWN_MAP_EARLY[positionOnMapOfPiece(pawn)];
+        return PAWN_MAPS_BLACK[gameStage][positionOnMapOfPiece(pawn)] + PAWN_INITIAL_POWER;
     }
 
     // Given a king, game stage and all piece bitboard, evaluate the power of the king
     public int evaluateKingPosition(Piece king, int gameStage) {
-        if (gameStage == ChessGame.END_GAME)
-            return -NEGATIVE_KING_MAP_END[positionOnMapOfPiece(king)];
+        if (king.getColor())
+            return (-KING_MAPS_WHITE[gameStage][positionOnMapOfPiece(king)]);
 
-        return -NEGATIVE_KING_MAP_EARLY[positionOnMapOfPiece(king)];
+        return (-KING_MAPS_BLACK[gameStage][positionOnMapOfPiece(king)]);
     }
 
     // If white return piece position, if black return piece 63-position
