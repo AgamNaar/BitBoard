@@ -1,3 +1,5 @@
+package Gui;
+
 import gamelogic.GameLogicUtilities;
 import gamelogic.pieces.*;
 

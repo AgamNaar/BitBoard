@@ -1,5 +1,7 @@
+package Gui;
+
 import gameengine.GameEngine;
-import gameengine.Perft;
+import gameengine.PieceMove;
 import gamelogic.ChessGame;
 import gamelogic.pieces.Piece;
 
@@ -8,18 +10,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class tempGui extends JFrame {
+public class TempGui extends JFrame {
 
     private String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     private final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
+    private GameEngine gameEngine;
 
     private final PiecesImage pieceImage;
 
     byte preSquare = -1;
 
-    public tempGui() {
+    public TempGui() {
         super("Grid of Buttons");
         // create a 2D array of 64 buttons
         buttonsBoard = new JButton[8][8];
@@ -82,32 +85,29 @@ public class tempGui extends JFrame {
 
         //Perft.generalTest();
         updateBoard();
-
     }
 
     // AddButtonListener inner class
     private class AddButtonListener implements ActionListener {
         private final JTextField fenStringText;
-        private final JTextField depthText;
 
         public AddButtonListener(JTextField fenStringText, JTextField depthText) {
             this.fenStringText = fenStringText;
-            this.depthText = depthText;
         }
 
         public void actionPerformed(ActionEvent e) {
             fen = fenStringText.getText();
             game.reset(fen);
             updateBoard();
-            Perft.perft(Integer.parseInt(depthText.getText()), game);
         }
     }
 
     // ActionListener for the "Reset" button
     private class ResetButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            game.reset(fen);
-            updateBoard();
+            //game.reset(fen);
+            //updateBoard();
+            botThink();
         }
     }
 
@@ -122,7 +122,6 @@ public class tempGui extends JFrame {
 
     // Update the colors and piece images of the chess board according to the piece board of the game
     private void updateBoard() {
-        Piece[] board = game.getPieceBoard();
         for (int col = 0; col < 8; col++) {
             for (int row = 0; row < 8; row++) {
                 if ((row + col) % 2 == 0)
@@ -130,9 +129,10 @@ public class tempGui extends JFrame {
                 else
                     buttonsBoard[row][col].setBackground(Color.GRAY);
 
+                Piece currentPiece = game.getPiece(row + col * 8);
                 // if piece at that position not null add its image on the right place
-                if (board[row + col * 8] != null) {
-                    Image pieceImage = this.pieceImage.getImageOfPiece(board[row + col * 8]);
+                if (currentPiece != null) {
+                    Image pieceImage = this.pieceImage.getImageOfPiece(currentPiece);
                     buttonsBoard[col][row].setIcon(new ImageIcon(pieceImage));
                 } else
                     buttonsBoard[col][row].setIcon(null);
@@ -163,18 +163,32 @@ public class tempGui extends JFrame {
             }
         } else {
             byte targetSquare = (byte) ((currRow * 8) + curCol), currentSquare = preSquare;
-            int gameStatus = game.executeMove(currentSquare, targetSquare, ChessGame.PROMOTE_TO_KNIGHT);
-            updateBoard();
+            int gameStatus = game.executeMove(currentSquare, targetSquare, ChessGame.PROMOTE_TO_QUEEN);
             afterMoveHandle(gameStatus, targetSquare, currentSquare);
             preSquare = -1;
-            GameEngine gameEngine = new GameEngine();
-            gameEngine.evalPosition(game);
-            gameEngine.findBestMove(game, 4);
+        }
+    }
+
+    // start bot think
+    public void botThink() {
+        int gameStatus = game.getGameStatus();
+        if ((gameStatus == ChessGame.NORMAL || gameStatus == ChessGame.CHECK)) {
+            gameEngine = new GameEngine(game, this, 4, 2);
+            gameEngine.start();
         }
 
     }
+    // play bot run
+    public void playBotTurn() {
+        PieceMove move = gameEngine.getBestMove();
+        game.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
+        afterMoveHandle(game.getGameStatus(), move.getTargetSquare(), move.getCurrentPieceSquare());
+    }
+
 
     private void afterMoveHandle(int gameStatus, byte targetSquare, byte currentSquare) {
+        updateBoard();
+
         if (gameStatus == ChessGame.MOVE_NOT_EXECUTED)
             return;
 
@@ -184,6 +198,7 @@ public class tempGui extends JFrame {
         paintSquare(Color.YELLOW, targetSquare);
         paintSquare(Color.YELLOW, currentSquare);
     }
+
 
     private void paintSquare(Color color, byte square) {
         int row = square / 8, col = square % 8;
@@ -198,6 +213,6 @@ public class tempGui extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(tempGui::new);
+        SwingUtilities.invokeLater(TempGui::new);
     }
 }
