@@ -1,6 +1,7 @@
 package gameengine;
 
 import gamelogic.ChessGame;
+import gamelogic.GameStatusHandler;
 import gamelogic.pieces.Piece;
 
 import java.util.LinkedList;
@@ -16,14 +17,14 @@ public class GameEvaluater {
     public int evaluateGame(ChessGame game, int currentDepth) {
         // If white get check mated, return WHITE_GET_CHECK_MATE + currentDepth, that way faster mate will be chosen
         int gameStatus = game.getGameStatus();
-        if (gameStatus == ChessGame.CHECKMATE)
+        if (gameStatus == GameStatusHandler.CHECKMATE)
             if (game.getPlayerToPlay())
-                return WHITE_GET_CHECK_MATE + currentDepth;
+                return WHITE_GET_CHECK_MATE - currentDepth;
             else
-                return BLACK_GET_CHECK_MATE - currentDepth;
+                return BLACK_GET_CHECK_MATE + currentDepth;
 
         // Draw, return 0
-        if (gameStatus == ChessGame.DRAW)
+        if (gameStatus == GameStatusHandler.DRAW)
             return 0;
 
         // Evaluate the board
@@ -39,7 +40,7 @@ public class GameEvaluater {
         long allPieceBitBoard = game.getAllPieceBitBoard();
         LinkedList<Piece> list = game.getPieceList();
 
-        int gameStage = game.getStage();
+        int gameStage = game.getGameStage();
 
         // For white pieces add to the eval, for black subtract
         for (Piece piece : list)

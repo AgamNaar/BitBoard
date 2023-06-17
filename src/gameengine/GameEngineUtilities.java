@@ -13,14 +13,13 @@ public class GameEngineUtilities {
     public static LinkedList<PieceMove> getAllPossibleMoves(ChessGame game) {
         LinkedList<PieceMove> pieceMoveList = new LinkedList<>();
         LinkedList<Piece> pieceList = game.getPieceList();
-        int gameStage = game.getStage();
+        int gameStage = game.getGameStage();
         for (Piece piece : pieceList) {
             // Check if the piece color is the game as the player turn color
             if (piece.getColor() == game.getPlayerToPlay()) {
                 byte piecePosition = piece.getSquare();
                 pieceMoveList.addAll(transferFromBitBoardMovesToMoves(piece,
                         game.getLegalMovesAsBitBoard(piecePosition), piecePosition, game.getAllPieceBitBoard(), gameStage));
-
             }
         }
         return pieceMoveList;

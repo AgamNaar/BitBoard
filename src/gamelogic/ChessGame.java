@@ -1,5 +1,6 @@
 package gamelogic;
 
+import gameengine.PieceMove;
 import gamelogic.pieces.King;
 import gamelogic.pieces.Pawn;
 import gamelogic.pieces.Piece;
@@ -19,18 +20,14 @@ public class ChessGame {
     private SpecialMovesHandler specialMovesHandler;
     private final LegalMoveHandler legalMoveHandler = new LegalMoveHandler();
 
+    private GameStatusHandler gameStatusHandler = new GameStatusHandler();
+
     public static final int MOVE_NOT_EXECUTED = -1;
-    public static final int NORMAL = 0;
-    public static final int CHECK = 1;
-    public static final int DRAW = 2;
-    public static final int CHECKMATE = 3;
     public static final char PROMOTE_TO_QUEEN = 'q';
     public static final char PROMOTE_TO_ROOK = 'r';
     public static final char PROMOTE_TO_KNIGHT = 'n';
     public static final char PROMOTE_TO_BISHOP = 'b';
-    public static final int EARLY_GAME = 0;
-    public static final int MID_GAME = 1;
-    public static final int END_GAME = 2;
+
 
     // Initialize a game of chess using a fen
     public ChessGame(String fen) {
@@ -46,6 +43,7 @@ public class ChessGame {
         else
             translator = new FenTranslator(fen);
         getGameSetUp(translator);
+        gameStatusHandler.resetMoveList();
     }
 
     // Retrieve all game setups (castling right, piece position, en passant target square) from fen
@@ -69,11 +67,12 @@ public class ChessGame {
     public ChessGame(ChessGame game) {
         pieceBoard = new Piece[GameLogicUtilities.BOARD_SIZE];
         colorOfPlayersTurn = game.getPlayerToPlay();
-        pieceList = game.getPieceList();
+        pieceList = game.getCopyOfPieceList();
         specialMovesHandler = new SpecialMovesHandler(game.specialMovesHandler);
         for (Piece piece : pieceList)
             pieceBoard[piece.getSquare()] = piece;
         updateAttributes();
+        this.gameStatusHandler = new GameStatusHandler(game.gameStatusHandler);
     }
 
     // Given a square, get all the legal moves that piece can do as bitboard
@@ -82,7 +81,7 @@ public class ChessGame {
     }
 
     // Given a piece, return the legal moves that the piece can do
-    private long getLegalMovesAsBitBoard(Piece piece) {
+    public long getLegalMovesAsBitBoard(Piece piece) {
         if (piece != null && colorOfPlayersTurn == piece.getColor()) {
             long pieceMoves = piece.getMovesAsBitBoard(allPiecesBitBoard, playerTurnPiecesBitBoard);
             long specialMoves = specialMovesHandler.getSpecialMoves(piece, getBitBoardOfSquaresThreatenByEnemy(),
@@ -90,7 +89,7 @@ public class ChessGame {
 
             long allPieceMoves = pieceMoves | specialMoves;
             return legalMoveHandler.removeIllegalMoves(allPieceMoves, piece, pieceList, colorOfPlayersTurn,
-                    allPiecesBitBoard, playerTurnPiecesBitBoard, isPlayerChecked(),
+                    allPiecesBitBoard, playerTurnPiecesBitBoard, gameStatusHandler.isPlayerChecked(this),
                     specialMovesHandler.getEnPassantSquare(), currentPlayerKing);
         }
         return 0;
@@ -116,37 +115,13 @@ public class ChessGame {
         specialMovesHandler.updateSpecialMoves(currentSquare, targetSquare, pieceToMove);
         updateAttributes();
 
-        return getGameStatus();
+
+        return gameStatusHandler.afterTurnHandler(new PieceMove(currentSquare, targetSquare,
+                typeOfPieceToPromoteTo, getPiece(targetSquare), 0), this);
     }
 
-    // get the status of the game - normal, check, draw or checkmate
-    public int getGameStatus() {
-        // Check if the enemy player is checked, checkmated or if it's a draw
-        if (isPlayerChecked()) {
-            if (doesPlayerHasLegalMovesToPlay(colorOfPlayersTurn))
-                return CHECK;
-            else
-                return CHECKMATE;
-        } else if (!doesPlayerHasLegalMovesToPlay(colorOfPlayersTurn))
-            return DRAW;
-
-        return NORMAL;
-    }
-
-    // Check if a player has a legal moves to do, if it has at least 1 return true
-    private boolean doesPlayerHasLegalMovesToPlay(boolean playerColor) {
-        for (Piece piece : pieceList) {
-            if (piece.getColor() == playerColor) {
-                long pieceMovement = getLegalMovesAsBitBoard(piece);
-                if (pieceMovement != 0)
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    // Return as bit board all the square that are currently threatened by enemy player
-    private long getBitBoardOfSquaresThreatenByEnemy() {
+    // Return as bitboard all the square that are currently threatened by enemy player
+    public long getBitBoardOfSquaresThreatenByEnemy() {
         long movementBitBoard = 0, enemyBitBoard = getEnemyBitBoard();
         for (Piece piece : pieceList)
             if (piece.getColor() == !colorOfPlayersTurn)
@@ -157,19 +132,22 @@ public class ChessGame {
 
         return movementBitBoard;
     }
-
-    // Given a color of a player, check if their king is checked, if yes return true
-    private boolean isPlayerChecked() {
-        // Check if king is on one of the movement squares of enemy piece
-        return (currentPlayerKing.getSquareAsBitBoard() & getBitBoardOfSquaresThreatenByEnemy()) != 0;
-    }
-
-    // Return if the game is over, either a draw or a chec mate
-    public boolean isGameOver() {
-        int gameStatus = getGameStatus();
-        return gameStatus == DRAW || gameStatus == CHECKMATE;
-    }
     // Getter methods
+
+    // Return if the game is over
+    public boolean isGameOver() {
+        return gameStatusHandler.isGameOver();
+    }
+
+    // Return status of the game
+    public int getGameStatus() {
+        return gameStatusHandler.getGameStatus();
+    }
+
+    // Return stage of the game
+    public int getGameStage() {
+        return gameStatusHandler.getGameStage();
+    }
 
     // Given a square, return the piece on that square
     public Piece getPiece(int position) {
@@ -177,12 +155,17 @@ public class ChessGame {
     }
 
     // Return a copy of the list of all the pieces
-    public LinkedList<Piece> getPieceList() {
+    public LinkedList<Piece> getCopyOfPieceList() {
         LinkedList<Piece> newPieceList = new LinkedList<>();
         for (Piece piece : pieceList)
             newPieceList.add(piece.clone());
 
         return newPieceList;
+    }
+
+    // Return the piece list
+    public LinkedList<Piece> getPieceList() {
+        return pieceList;
     }
 
     // Return all piece bitboard
@@ -208,19 +191,6 @@ public class ChessGame {
     // Return the current player's king square
     public byte getPlayerTurnKingSquare() {
         return currentPlayerKing.getSquare();
-    }
-
-    // Return the stage of the game, early game, mid-game, end game
-    public int getStage() {
-        //TODO: for now its a demo function
-        int numberOfPiece = pieceList.size();
-        if (numberOfPiece > 28)
-            return EARLY_GAME;
-        if (numberOfPiece > 12)
-            return MID_GAME;
-
-        return EARLY_GAME;
-
     }
 
     // Update parameters functions
@@ -255,4 +225,6 @@ public class ChessGame {
             allPiecesBitBoard |= pieceBitBoardPosition;
         }
     }
+
+
 }

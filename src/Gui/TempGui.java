@@ -3,6 +3,7 @@ package Gui;
 import gameengine.GameEngine;
 import gameengine.PieceMove;
 import gamelogic.ChessGame;
+import gamelogic.GameStatusHandler;
 import gamelogic.pieces.Piece;
 
 import javax.swing.*;
@@ -166,23 +167,26 @@ public class TempGui extends JFrame {
             int gameStatus = game.executeMove(currentSquare, targetSquare, ChessGame.PROMOTE_TO_QUEEN);
             afterMoveHandle(gameStatus, targetSquare, currentSquare);
             preSquare = -1;
+            System.out.println(gameStatus);
         }
     }
 
     // start bot think
     public void botThink() {
         int gameStatus = game.getGameStatus();
-        if ((gameStatus == ChessGame.NORMAL || gameStatus == ChessGame.CHECK)) {
-            gameEngine = new GameEngine(game, this, 4, 2);
+        if ((gameStatus == GameStatusHandler.NORMAL || gameStatus == GameStatusHandler.CHECK)) {
+            gameEngine = new GameEngine(game, this, 2, 2);
             gameEngine.start();
         }
 
     }
+
     // play bot run
     public void playBotTurn() {
         PieceMove move = gameEngine.getBestMove();
         game.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
         afterMoveHandle(game.getGameStatus(), move.getTargetSquare(), move.getCurrentPieceSquare());
+        botThink();
     }
 
 
@@ -192,7 +196,7 @@ public class TempGui extends JFrame {
         if (gameStatus == ChessGame.MOVE_NOT_EXECUTED)
             return;
 
-        if (gameStatus == ChessGame.CHECK || gameStatus == ChessGame.CHECKMATE)
+        if (gameStatus == GameStatusHandler.CHECK || gameStatus == GameStatusHandler.CHECKMATE)
             paintSquare(Color.decode("#A44040"), game.getPlayerTurnKingSquare());
 
         paintSquare(Color.YELLOW, targetSquare);
