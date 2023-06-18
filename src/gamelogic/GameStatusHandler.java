@@ -139,4 +139,9 @@ public class GameStatusHandler {
     public void resetMoveList() {
         listOfMoves.clear();
     }
+
+    public void initialize(ChessGame game) {
+        afterTurnHandler(new PieceMove(),game);
+        listOfMoves.clear();
+    }
 }

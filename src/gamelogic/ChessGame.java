@@ -43,7 +43,7 @@ public class ChessGame {
         else
             translator = new FenTranslator(fen);
         getGameSetUp(translator);
-        gameStatusHandler.resetMoveList();
+        gameStatusHandler.initialize(this);
     }
 
     // Retrieve all game setups (castling right, piece position, en passant target square) from fen
@@ -132,6 +132,16 @@ public class ChessGame {
 
         return movementBitBoard;
     }
+
+    // Given a square, return if it's a castling move
+    public boolean isCastlingMove(byte targetSquare, Piece pieceToMove) {
+        // Is special move check if it's a special move of a king or a pawn, in case of a king it can onl be castling
+        if (pieceToMove instanceof King)
+            return specialMovesHandler.isSpecialMove(targetSquare, pieceToMove);
+        else
+            return false;
+    }
+
     // Getter methods
 
     // Return if the game is over

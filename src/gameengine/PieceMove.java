@@ -35,9 +35,19 @@ public class PieceMove {
         this.pieceToMove = piece;
     }
 
+    // Empty constructor
+    public PieceMove() {
+        this.currentPieceSquare = 0;
+        this.targetSquare = 0;
+        this.typeOfPieceToPromoteTo = 0;
+        this.pieceToMoveValue = 0;
+        this.pieceToMove = new Pawn((byte) 1, true);
+    }
+
     // Check if the target square is a promotion square
     public boolean isItPromotionMove() {
-        return targetSquare < FIRST_SQUARE_ON_SECOND_ROW || targetSquare > LAST_SQUARE_ON_7TH_ROW;
+        return (targetSquare < FIRST_SQUARE_ON_SECOND_ROW || targetSquare > LAST_SQUARE_ON_7TH_ROW)
+                && pieceToMove instanceof Pawn;
     }
 
     @Override
@@ -83,6 +93,10 @@ public class PieceMove {
 
     public int getMoveAssumedValue() {
         return moveAssumedValue;
+    }
+
+    public Piece getPieceToMove() {
+        return pieceToMove;
     }
 
     // Setter method

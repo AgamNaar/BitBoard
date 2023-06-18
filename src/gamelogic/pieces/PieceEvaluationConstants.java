@@ -9,13 +9,13 @@ public class PieceEvaluationConstants {
 
     protected static final int QUEEN_MOVEMENT_MULTIPLIER_EARLY = 1;
 
-    protected static final int QUEEN_MOVEMENT_MULTIPLIER_END = 8;
+    protected static final int QUEEN_MOVEMENT_MULTIPLIER_END = 5;
 
     protected static final int PAWN_INITIAL_POWER = 100;
     protected static final int KNIGHT_INITIAL_POWER = 280;
     protected static final int BISHOP_INITIAL_POWER = 300;
     protected static final int ROOK_INITIAL_POWER = 350;
-    protected static final int QUEEN_INITIAL_POWER = 600;
+    protected static final int QUEEN_INITIAL_POWER = 850;
 
 
     protected static final int[] ROOK_MAP = {50, 50, 50, 50, 50, 50, 50, 50,
@@ -87,8 +87,8 @@ public class PieceEvaluationConstants {
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
-            50, 50, 70, 70, 80, -150, -150, -40,
-            40, 40, 40, 40, 40, -100, -100, 50,
+            -20, 0, 60, 70, 80, -60, -80, -20,
+            10, 0, 20, 40, 40, -40, -40, 10,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -96,8 +96,8 @@ public class PieceEvaluationConstants {
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 80, 80, 80, 80,
-            -40, -150, -150, 80, 70, 70, 50, 50,
-            50, -100, -100, 40, 40, 40, 40, 40,
+            -20, -80, -60, 80, 70, 60, 0, -20,
+            10, -40, -40, 40, 40, 20, 0, 10,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0};
 
