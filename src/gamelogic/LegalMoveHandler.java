@@ -28,7 +28,7 @@ public class LegalMoveHandler {
             return false;
 
         // Check if the target square is a legal move the piece can do
-        return (bitBoardLegalMoves & GameLogicUtilities.getSquarePositionAsBitboardPosition(targetSquare)) != 0;
+        return (bitBoardLegalMoves & GameLogicUtilities.squareAsBitBoard(targetSquare)) != 0;
     }
 
     // Given a piece and the bitboard of moves it can do, remove all moves that are illegal
@@ -40,7 +40,7 @@ public class LegalMoveHandler {
         long piecePositionAsBitBoard = pieceToMove.getSquareAsBitBoard(),
                 kingPositionBitBoard = king.getSquareAsBitBoard();
 
-        long enPassantSquareBitBoardPosition = GameLogicUtilities.getSquarePositionAsBitboardPosition(enPassantSquare);
+        long enPassantSquareBitBoardPosition = GameLogicUtilities.squareAsBitBoard(enPassantSquare);
         // If king, remove all squares that enemy piece threat
         if (pieceToMove instanceof King) {
             long threatenedSquare = threatenedSquareForKing(pieceList, allPiecesBitBoard, colorOfPlayersTurn, king);
