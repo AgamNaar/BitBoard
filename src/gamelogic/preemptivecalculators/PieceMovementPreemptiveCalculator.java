@@ -69,15 +69,15 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
         byte lastSquareOn6ThRow = LAST_SQUARE_ON_6TH_ROW + GameLogicUtilities.BOARD_EDGE_SIZE + 1;
         for (byte pieceSquare = firstSquareOn2NdtRow; pieceSquare < lastSquareOn6ThRow; pieceSquare++) {
             long currSquareMoves = 0L;
-            currSquareMoves |= GameLogicUtilities.getSquarePositionAsBitboardPosition(offset + pieceSquare);
+            currSquareMoves |= GameLogicUtilities.squareAsBitBoard(offset + pieceSquare);
 
             // if on 2nd raw as white, it can move twice
             if (pieceSquare <= LAST_SQUARE_ON_2ND_ROW && offset == GameLogicUtilities.WHITE_PAWN_MOVE_OFFSET)
-                currSquareMoves |= GameLogicUtilities.getSquarePositionAsBitboardPosition((offset * 2) + pieceSquare);
+                currSquareMoves |= GameLogicUtilities.squareAsBitBoard((offset * 2) + pieceSquare);
 
             // if on the 6th row as black, it can move twice
             if (pieceSquare >= LAST_SQUARE_ON_6TH_ROW && offset == GameLogicUtilities.BLACK_PAWN_MOVE_OFFSET)
-                currSquareMoves |= GameLogicUtilities.getSquarePositionAsBitboardPosition((offset * 2) + pieceSquare);
+                currSquareMoves |= GameLogicUtilities.squareAsBitBoard((offset * 2) + pieceSquare);
 
             moveArray[pieceSquare] = currSquareMoves;
         }
@@ -90,7 +90,7 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
             for (byte offset : offsetArray) {
                 // check if legal offset, if yes added the possible moves
                 if (dxDyCheck(square, offset))
-                    currSquareMoves |= GameLogicUtilities.getSquarePositionAsBitboardPosition(offset + square);
+                    currSquareMoves |= GameLogicUtilities.squareAsBitBoard(offset + square);
             }
             moveArray[square] = currSquareMoves;
         }
@@ -120,7 +120,7 @@ public class PieceMovementPreemptiveCalculator extends PreemptiveCalculator {
     // Given a pieceSquare, an array of offsets and a long that represent the current board
     // Return a long with all the possible moves a piece with does offset can do on that board
     private MovementData generateMovesLinePiece(byte pieceSquare, byte[] offsetArray, long bitBoard, byte[] movesTillEdge) {
-        long positionBit = GameLogicUtilities.getSquarePositionAsBitboardPosition(pieceSquare), result = 0;
+        long positionBit = GameLogicUtilities.squareAsBitBoard(pieceSquare), result = 0;
         int counter = 0;
         for (byte i = 0; i < offsetArray.length; i++) {
             // Run until the edge of the board or found a piece

@@ -19,7 +19,7 @@ public class Knight extends Piece {
     @Override
     public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
         long movement = getMovesAsBitBoard(EMPTY_BOARD, EMPTY_BOARD);
-        long enemyKingBitBoardPosition = GameLogicUtilities.getSquarePositionAsBitboardPosition(enemyKingSquare);
+        long enemyKingBitBoardPosition = GameLogicUtilities.squareAsBitBoard(enemyKingSquare);
         if ((movement & enemyKingBitBoardPosition) != 0)
             return getSquareAsBitBoard();
 

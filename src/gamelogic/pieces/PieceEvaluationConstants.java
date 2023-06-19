@@ -11,11 +11,11 @@ public class PieceEvaluationConstants {
 
     protected static final int QUEEN_MOVEMENT_MULTIPLIER_END = 5;
 
-    protected static final int PAWN_INITIAL_POWER = 100;
-    protected static final int KNIGHT_INITIAL_POWER = 280;
-    protected static final int BISHOP_INITIAL_POWER = 300;
-    protected static final int ROOK_INITIAL_POWER = 350;
-    protected static final int QUEEN_INITIAL_POWER = 850;
+    public static final int PAWN_INITIAL_POWER = 100;
+    public static final int KNIGHT_INITIAL_POWER = 280;
+    public static final int BISHOP_INITIAL_POWER = 300;
+    public static final int ROOK_INITIAL_POWER = 500;
+    public static final int QUEEN_INITIAL_POWER = 850;
 
 
     protected static final int[] ROOK_MAP = {50, 50, 50, 50, 50, 50, 50, 50,

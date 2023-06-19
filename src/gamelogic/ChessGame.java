@@ -73,6 +73,7 @@ public class ChessGame {
             pieceBoard[piece.getSquare()] = piece;
         updateAttributes();
         this.gameStatusHandler = new GameStatusHandler(game.gameStatusHandler);
+        gameStatusHandler.initialize(this);
     }
 
     // Given a square, get all the legal moves that piece can do as bitboard

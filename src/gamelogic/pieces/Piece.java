@@ -7,6 +7,14 @@ import gamelogic.GameLogicUtilities;
 // Square - square of the piece on the board
 public abstract class Piece implements Cloneable {
 
+    public static final int QUEEN = 5;
+    public static final int ROOK = 4;
+    public static final int BISHOP = 3;
+    public static final int KNIGHT = 2;
+    public static final int PAWN = 1;
+    public static final int KING = 0;
+
+
     private byte square;
     private final boolean color;
 
@@ -36,7 +44,7 @@ public abstract class Piece implements Cloneable {
 
     // Return the position of the piece as bitboard
     public long getSquareAsBitBoard() {
-        return GameLogicUtilities.getSquarePositionAsBitboardPosition(square);
+        return GameLogicUtilities.squareAsBitBoard(square);
     }
 
     // getter and setter methods
@@ -67,4 +75,24 @@ public abstract class Piece implements Cloneable {
 
     // Return the value of the piece given its position and state of the board
     public abstract int getPieceValue(long allPieceBitBoard, int gameStage);
+
+    // Return the piece type of the piece
+    public int getPieceType() {
+        if (this instanceof Queen)
+            return QUEEN;
+
+        if (this instanceof Rook)
+            return ROOK;
+
+        if (this instanceof Bishop)
+            return BISHOP;
+
+        if (this instanceof Knight)
+            return KNIGHT;
+
+        if (this instanceof Pawn)
+            return PAWN;
+
+        return KING;
+    }
 }

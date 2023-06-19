@@ -105,7 +105,7 @@ public class PieceMovement {
     // return the moves it can do as bitboard
     public long getPawnMovement(byte piecePosition, boolean color, long allPiecesBitBoard, long enemyPieceBitBoard) {
         long offset = color ? WHITE_PAWN_MOVE_OFFSET : GameLogicUtilities.BLACK_PAWN_MOVE_OFFSET;
-        long squareInfantOfPawn = GameLogicUtilities.getSquarePositionAsBitboardPosition(piecePosition + offset);
+        long squareInfantOfPawn = GameLogicUtilities.squareAsBitBoard(piecePosition + offset);
         // In order to capture an enemy piece must be in the capture square
         long captureSquares = (color ? WHITE_PAWN_CAPTURE[piecePosition] : BLACK_PAWN_CAPTURE[piecePosition])
                 & enemyPieceBitBoard;

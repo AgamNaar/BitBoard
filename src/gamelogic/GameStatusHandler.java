@@ -63,7 +63,7 @@ public class GameStatusHandler {
     private int updateGameStage(LinkedList<Piece> piecesList) {
         //TODO: for now its a demo function
         int numberOfPiece = piecesList.size();
-        if (numberOfPiece > 28)
+        if (numberOfPiece > 33)
             return EARLY_GAME;
         if (numberOfPiece > 12)
             return MID_GAME;
@@ -135,13 +135,9 @@ public class GameStatusHandler {
         return gameStatus == DRAW || gameStatus == CHECKMATE;
     }
 
-    // Reset the move list
-    public void resetMoveList() {
-        listOfMoves.clear();
-    }
-
     public void initialize(ChessGame game) {
-        afterTurnHandler(new PieceMove(),game);
+        afterTurnHandler(new PieceMove(), game);
+        gameStage = updateGameStage(game.getPieceList());
         listOfMoves.clear();
     }
 }

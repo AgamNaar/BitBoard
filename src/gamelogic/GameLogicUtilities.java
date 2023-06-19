@@ -28,13 +28,13 @@ public class GameLogicUtilities {
 
     // Convert a square represented as a position (i.e. number from 0 to 63), turn it into bit position
     // i.e. only the bit on the position is 1
-    public static long getSquarePositionAsBitboardPosition(long square) {
+    public static long squareAsBitBoard(long square) {
         return 1L << square;
     }
 
     // Update piece Position from its current square to the target square
     public static void updatePiecePosition(byte targetSquare, byte currentSquare,
-                                    Piece[] board, LinkedList<Piece> pieceList) {
+                                           Piece[] board, LinkedList<Piece> pieceList) {
 
         Piece pieceToMove = board[currentSquare];
         Piece pieceToRemove = board[targetSquare];

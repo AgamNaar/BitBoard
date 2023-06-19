@@ -18,7 +18,7 @@ public class Pawn extends Piece {
     @Override
     public long getThreatLines(byte enemyKingSquare, Long boardBitBoard) {
         long pawnAttackSquares = getPawnAttackSquare();
-        long enemyKingBitBoardPosition = GameLogicUtilities.getSquarePositionAsBitboardPosition(enemyKingSquare);
+        long enemyKingBitBoardPosition = GameLogicUtilities.squareAsBitBoard(enemyKingSquare);
         if ((pawnAttackSquares & enemyKingBitBoardPosition) != 0)
             return getSquareAsBitBoard();
 

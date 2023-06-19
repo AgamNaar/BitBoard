@@ -59,8 +59,8 @@ public class ThreateningLinePreemptiveCalculator extends PreemptiveCalculator {
     private long checkIfValidThanCreateThreatenLine(byte pieceSquare, byte kingPosition, long boardBitBoard,
                                                     long mask, byte[] movementOffsetArray, byte[] distancesTillEdge) {
 
-        long kingPositionAsBitBoard = GameLogicUtilities.getSquarePositionAsBitboardPosition(kingPosition);
-        long piecePositionAsBitBoard = GameLogicUtilities.getSquarePositionAsBitboardPosition(pieceSquare);
+        long kingPositionAsBitBoard = GameLogicUtilities.squareAsBitBoard(kingPosition);
+        long piecePositionAsBitBoard = GameLogicUtilities.squareAsBitBoard(pieceSquare);
         // King position is on the mask of the piece movement
         if ((mask & kingPositionAsBitBoard) == 0)
             return 0;
@@ -78,8 +78,8 @@ public class ThreateningLinePreemptiveCalculator extends PreemptiveCalculator {
     private long createThreatenLine(byte pieceSquare, byte kingPosition, long bitBoard,
                                     byte[] offsetArray, byte[] movesTillEdge) {
 
-        long positionBit = GameLogicUtilities.getSquarePositionAsBitboardPosition(pieceSquare);
-        long kingPositionAsBitBoard = GameLogicUtilities.getSquarePositionAsBitboardPosition(kingPosition);
+        long positionBit = GameLogicUtilities.squareAsBitBoard(pieceSquare);
+        long kingPositionAsBitBoard = GameLogicUtilities.squareAsBitBoard(kingPosition);
         for (byte i = 0; i < offsetArray.length; i++) {
             long currentLine = positionBit;
             int numberOfPiecesOnLine = 0;

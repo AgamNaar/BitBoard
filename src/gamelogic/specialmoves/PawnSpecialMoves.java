@@ -41,7 +41,7 @@ public class PawnSpecialMoves {
 
         if (enPassantTargetSquare != NO_EN_PASSANT_TARGET_SQUARE)
             enPassantTargetSquareBitBoard = GameLogicUtilities.
-                    getSquarePositionAsBitboardPosition(enPassantTargetSquare);
+                    squareAsBitBoard(enPassantTargetSquare);
 
         long pawnAttackSquare = piece.getPieceMovement().getPawnCaptureSquare(piece.getColor(), piece.getSquare());
         return pawnAttackSquare & enPassantTargetSquareBitBoard;
