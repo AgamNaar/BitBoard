@@ -16,6 +16,8 @@ public class GameEngine extends Thread {
     private int depthSearch;
     GameEngineMonitor monitor;
 
+    private static final TranspositionTableHandler transpositionTableHandler = new TranspositionTableHandler();
+
     private int counter = 0;
 
     public static final GameEvaluater gameEvaluater = new GameEvaluater();
@@ -64,7 +66,11 @@ public class GameEngine extends Thread {
 
     // Find the best move in the game at the depth given, using alpha beta pruning - initialize the fist recursive call
     public PieceMove findBestMove(ChessGame game, int depth) {
-        return alphaBeta(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, game.getPlayerToPlay(), null);
+        counter = 0;
+        PieceMove move = alphaBeta(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, game.getPlayerToPlay(), null);
+        System.out.println("number of position checked: " + counter);
+        //transpositionTableHandler.deleteOldestTable();
+        return move;
     }
 
     /*
@@ -83,6 +89,9 @@ public class GameEngine extends Thread {
             return null;
 
         int bestScore = maximizingPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        //PieceMove bestMove = transpositionTableHandler.checkIfCalculatedAlready(game,depth,alpha,beta);
+        //if (bestMove != null)
+        //return bestMove;
         PieceMove bestMove = null;
         // Base case: if depth is 0 or game is over, return the evaluated score
         if (depth == 0 || game.isGameOver()) {
@@ -93,7 +102,11 @@ public class GameEngine extends Thread {
 
         // Get all move possible in this position, and sort them using move order
         LinkedList<PieceMove> pieceMovesList = GameEngineUtilities.getAllPossibleMoves(game);
-        MoveOrderingHandler.sortMoveByOrderValue(game, pieceMovesList, 0);
+        MoveOrderingHandler.sortMoveByOrderValue(game, pieceMovesList);
+
+        if (depth == 6)
+            for (PieceMove pieceMove : pieceMovesList)
+                System.out.println(pieceMove + " " + pieceMove.getMoveAssumedValue());
 
         // Evaluate and find the best move
         for (PieceMove move : pieceMovesList) {
@@ -121,6 +134,8 @@ public class GameEngine extends Thread {
             if (beta <= alpha)
                 break;
         }
+
+        transpositionTableHandler.updateTranspositionTable(bestMove, depth, bestScore, alpha, beta, game);
         // Return the best move (there's always at least 1 move, otherwise the game would've been over)
         bestMove.setMoveValue(bestScore);
         return bestMove;

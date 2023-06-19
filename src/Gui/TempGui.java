@@ -17,7 +17,7 @@ public class TempGui extends JFrame {
 
     private final ChessGame game = new ChessGame(fen);
     private final JButton[][] buttonsBoard;
-    private GameEngine gameEngine;
+    private GameEngine gameEngine = new GameEngine(game,this,3,2);
 
     private final PiecesImage pieceImage;
 
@@ -108,8 +108,28 @@ public class TempGui extends JFrame {
         public void actionPerformed(ActionEvent e) {
             //game.reset(fen);
             //updateBoard();
-            botThink();
+            PieceMove move = gameEngine.findBestMove(game,6);
+            game.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
+            afterMoveHandle(game.getGameStatus(), move.getTargetSquare(), move.getCurrentPieceSquare());
         }
+    }
+
+    // start bot think
+    public void botThink() {
+        int gameStatus = game.getGameStatus();
+        if ((gameStatus == GameStatusHandler.NORMAL || gameStatus == GameStatusHandler.CHECK)) {
+            gameEngine = new GameEngine(game, this, 2, 2);
+            gameEngine.start();
+        }
+
+    }
+
+    // play bot run
+    public void playBotTurn() {
+        PieceMove move = gameEngine.getBestMove();
+        game.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
+        afterMoveHandle(game.getGameStatus(), move.getTargetSquare(), move.getCurrentPieceSquare());
+        //botThink();
     }
 
     private class ButtonListener implements ActionListener {
@@ -169,24 +189,6 @@ public class TempGui extends JFrame {
             preSquare = -1;
             System.out.println(gameStatus);
         }
-    }
-
-    // start bot think
-    public void botThink() {
-        int gameStatus = game.getGameStatus();
-        if ((gameStatus == GameStatusHandler.NORMAL || gameStatus == GameStatusHandler.CHECK)) {
-            gameEngine = new GameEngine(game, this, 2, 2);
-            gameEngine.start();
-        }
-
-    }
-
-    // play bot run
-    public void playBotTurn() {
-        PieceMove move = gameEngine.getBestMove();
-        game.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
-        afterMoveHandle(game.getGameStatus(), move.getTargetSquare(), move.getCurrentPieceSquare());
-        botThink();
     }
 
 
