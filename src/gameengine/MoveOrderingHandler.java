@@ -16,6 +16,17 @@ public class MoveOrderingHandler {
 
     private static final long ROOK_FILE_MASK = 0x8080808080808080L;
     private static final MoreChessGameData gameData = new MoreChessGameData();
+    private static final int BACK_MOVE_BONUS = 200;
+    private static final int NO_VALUE_MOVE_BONUS = -500;
+    private static final int CHECK_BONUS = 200;
+    private static final int MOVE_KING_END_GAME_BONUS = 50;
+    private static final int CASTLE_KING_EARLY_GAME = 50;
+    private static final int MOVING_KING_FOR_NO_REASON = -2000;
+    private static final int SEMI_OPEN_FILE_NO_ENEMY_PAWN_BONUS = 15;
+    private static final int SEMI_OPEN_FILE_NO_FRIENDLY_PAWN_BONUS = 35;
+    private static final int OPEN_FILE_BONUS = 50;
+    private static final int PROMOTION_TO_QUEEN = 800;
+    private static final int PROMOTION_NOT_TO_A_QUEEN_BONUS = 800;
 
     // Receive a list of moves and current game
     // Return a list where likely good moves are at the top of the list and bad at the end
@@ -53,13 +64,14 @@ public class MoveOrderingHandler {
 
         // Usually going back is not good
         if (isBackwardMove(pieceMove) && game.getGameStage() != GameStatusHandler.END_GAME)
-            assumedValue -= 200;
+            assumedValue -= BACK_MOVE_BONUS;
 
         // New square attacking bonuses
         if (!isPawn)
             assumedValue += newSquareAttackingBonus(pieceMove, newSquareAttackSquares);
 
-        return assumedValue == 0 ? -500 : assumedValue;
+        // If the assumed value is 0, probably and a move worth checking  
+        return assumedValue == 0 ? NO_VALUE_MOVE_BONUS : assumedValue;
     }
 
     // Assume the move value of the king
@@ -69,15 +81,15 @@ public class MoveOrderingHandler {
 
         // If check, probably good idea to move with the king
         if (game.getGameStatus() == GameStatusHandler.CHECK)
-            assumedValue += 200;
+            assumedValue += CHECK_BONUS;
 
         // If it's not end game, and not a castling move, probably bad idea to move the king
         if (isCastlingMove && game.getGameStage() == GameStatusHandler.EARLY_GAME)
-            assumedValue += 70;
+            assumedValue += CASTLE_KING_EARLY_GAME;
 
         // If it's end game, might be good idea to move the king
         if (game.getGameStage() == GameStatusHandler.END_GAME)
-            assumedValue += 50;
+            assumedValue += MOVE_KING_END_GAME_BONUS;
 
         // If it's a free capture, probably good idea
         if (freeCapture(pieceMove, game, gameData.getAllEnemyThreatenSquare()))
@@ -86,7 +98,7 @@ public class MoveOrderingHandler {
 
         // If there is no good reason to move the king, then it's probably an awful idea to move it
         if (assumedValue == 0)
-            return -2000;
+            return MOVING_KING_FOR_NO_REASON;
         else
             return assumedValue;
     }
@@ -113,15 +125,15 @@ public class MoveOrderingHandler {
 
         // Check if it's semi open file were enemy have no pawn on file
         if ((mask & gameData.getMapAccordingToType(Piece.PAWN)) == 0 && isRookOnFile)
-            bonus += 15;
+            bonus += SEMI_OPEN_FILE_NO_ENEMY_PAWN_BONUS;
 
         // Check if it's semi open file were you have no pawn on file
         if ((mask & gameData.getMyPawnMap()) == 0 && isRookOnFile)
-            bonus += 35;
+            bonus += SEMI_OPEN_FILE_NO_FRIENDLY_PAWN_BONUS;
 
         // Check if it's an open file
         if ((((gameData.getMapAccordingToType(Piece.PAWN) | gameData.getMyPawnMap()) & mask) == 0) && isRookOnFile)
-            bonus += 150;
+            bonus += OPEN_FILE_BONUS;
 
         return bonus;
     }
@@ -134,10 +146,10 @@ public class MoveOrderingHandler {
         // Promotion to queen is almost always good
         if (pieceMove.isItPromotionMove())
             if (pieceMove.getTypeOfPieceToPromoteTo() == ChessGame.PROMOTE_TO_QUEEN)
-                assumedValue = 800;
+                assumedValue = PROMOTION_TO_QUEEN;
             else
                 // It's almost never a good idea to promote to something that's not a queen
-                assumedValue = -1000;
+                assumedValue = -PROMOTION_NOT_TO_A_QUEEN_BONUS;
 
         long[] mapArray = gameData.getEnemyPieceByPiecesMapArray();
         // If threaten a piece who can't attack piece back, big bonus
