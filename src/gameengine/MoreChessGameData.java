@@ -1,7 +1,6 @@
 package gameengine;
 
 import gamelogic.ChessGame;
-import gamelogic.pieces.King;
 import gamelogic.pieces.Pawn;
 import gamelogic.pieces.Piece;
 
@@ -92,10 +91,6 @@ public class MoreChessGameData {
         return enemyPieceByPiecesMapArray;
     }
 
-    public long[] getEnemyThreatenSquareByPieceArray() {
-        return enemyThreatenSquareByPieceArray;
-    }
-
     public long getEnemyWithoutSamePieceTypeAndWithoutPawn(int pieceType) {
         long result = 0;
         for (int i = 0; i < enemyThreatenSquareByPieceArray.length; i++) {
@@ -106,9 +101,9 @@ public class MoreChessGameData {
     }
 
     int[] threateningPieceBonus = {150, 10, 50, 50, 100, 200};
-    int[] threateningPieceSamePieceBonus = {400, 100, 280, 300, 500, 850};
 
     public int threatBonusByPieceType(int pieceType) {
         return threateningPieceBonus[pieceType];
     }
+
 }

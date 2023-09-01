@@ -32,8 +32,9 @@ public class PiecesImage {
     private static final int KNIGHT_PIECE_TYPE = 4;
     private static final int PAWN_PIECE_TYPE = 5;
 
-    // File representing the folder that you select using a FileChooser
-    private static final File dir = new File("imageFile");
+    private static final String IMAGE_FILE_NAME = "imageFile";
+
+    private static final File dir = new File(IMAGE_FILE_NAME);
 
     // return the collection of images from the file
     public PiecesImage(int size) {
