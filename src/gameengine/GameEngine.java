@@ -23,27 +23,26 @@ public class GameEngine extends Thread {
     public static final GameEvaluater gameEvaluater = new GameEvaluater();
 
     // Builder, create monitor to stop search when time is over
-    public GameEngine(ChessGame game, TempGui gui, int startingDepthSearch, int searchTimeSecond) {
+    public GameEngine(ChessGame game, TempGui gui, int startingDepthSearch, int searchTimeSecond, boolean withTimeLimit) {
         gameToEvaluate = game;
         this.depthSearch = startingDepthSearch;
-        monitor = new GameEngineMonitor(this, gui, searchTimeSecond);
-    }
-
-    // Calculate the eval of the current board
-    public void evalPosition(ChessGame game) {
-        System.out.println("Position val: " + gameEvaluater.evaluateGame(game, 0));
+        // If there is a time limit, add monitor to stop it the run after set time
+        if (withTimeLimit)
+            monitor = new GameEngineMonitor(this, gui, searchTimeSecond);
     }
 
     // Run function of thread, will run searches in deeper depth as long as not interrupted
     @Override
     public void run() {
         // Run monitor to tell it when time is over to stop it
-        monitor.start();
+        if (monitor != null)
+            monitor.start();
+
         int successfulCounter = 0, successfulDepthSearch = 0;
         PieceMove currentPieceMove;
 
+        // Run as long as the thread is not interrupted
         try {
-            // Run as long as the thread is not interrupted
             while (!this.isInterrupted()) {
                 counter = 0;
                 // Find the best move in the current depth
@@ -58,7 +57,7 @@ public class GameEngine extends Thread {
                 }
                 depthSearch += 2;
             }
-        } catch (Exception exception) {
+        } finally {
             System.out.println("Depth search: " + successfulDepthSearch + ". Position evaluated: " + successfulCounter);
             System.out.println("Move found: " + bestMove.toStringWithMoveValue());
         }
@@ -66,11 +65,7 @@ public class GameEngine extends Thread {
 
     // Find the best move in the game at the depth given, using alpha beta pruning - initialize the fist recursive call
     public PieceMove findBestMove(ChessGame game, int depth) {
-        counter = 0;
-        PieceMove move = alphaBeta(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, game.getPlayerToPlay(), null);
-        System.out.println("number of position checked: " + counter);
-        //transpositionTableHandler.deleteOldestTable();
-        return move;
+        return alphaBeta(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, game.getPlayerToPlay(), null);
     }
 
     /*
@@ -81,18 +76,20 @@ public class GameEngine extends Thread {
     black (low number), in the case that beta <= alpha we know a better move has already been found, and there is no
     reason to keep searching that branch of the tree
      */
+
     private PieceMove alphaBeta(ChessGame game, int depth, int alpha, int beta, boolean maximizingPlayer,
                                 PieceMove preMove) {
+        int bestScore = maximizingPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         // Check if the search is over or not
         if (currentThread().isInterrupted())
             return null;
 
-        int bestScore = maximizingPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        //PieceMove bestMove = transpositionTableHandler.checkIfCalculatedAlready(game,depth,alpha,beta);
-        //if (bestMove != null)
-        //return bestMove;
-        PieceMove bestMove = null;
+        // Check if the position was already evaluated with a greater depth
+        PieceMove bestMove = transpositionTableHandler.checkIfCalculatedAlready(game, depth, alpha, beta);
+        if (bestMove != null)
+            return bestMove;
+
         // Base case: if depth is 0 or game is over, return the evaluated score
         if (depth == 0 || game.isGameOver()) {
             preMove.setMoveValue(gameEvaluater.evaluateGame(game, depth));
@@ -104,28 +101,25 @@ public class GameEngine extends Thread {
         LinkedList<PieceMove> pieceMovesList = GameEngineUtilities.getAllPossibleMoves(game);
         MoveOrderingHandler.sortMoveByOrderValue(game, pieceMovesList);
 
-        if (depth == 6)
-            for (PieceMove pieceMove : pieceMovesList)
-                System.out.println(pieceMove + " " + pieceMove.getMoveAssumedValue());
-
         // Evaluate and find the best move
         for (PieceMove move : pieceMovesList) {
             ChessGame newGame = new ChessGame(game);
             newGame.executeMove(move.getCurrentPieceSquare(), move.getTargetSquare(), move.getTypeOfPieceToPromoteTo());
 
             PieceMove current = alphaBeta(newGame, depth - 1, alpha, beta, !maximizingPlayer, move);
-            int score = current.getMoveValue();
+            if (current == null)
+                return null;
 
             // Check if we found a better score and check if we found a better alpha/beta
             if (maximizingPlayer) {
-                if (score > bestScore) {
-                    bestScore = score;
+                if (current.getMoveValue() > bestScore) {
+                    bestScore = current.getMoveValue();
                     bestMove = move;
                 }
                 alpha = Math.max(alpha, bestScore);
             } else {
-                if (score < bestScore) {
-                    bestScore = score;
+                if (current.getMoveValue() < bestScore) {
+                    bestScore = current.getMoveValue();
                     bestMove = move;
                 }
                 beta = Math.min(beta, bestScore);
@@ -134,9 +128,9 @@ public class GameEngine extends Thread {
             if (beta <= alpha)
                 break;
         }
-
         transpositionTableHandler.updateTranspositionTable(bestMove, depth, bestScore, alpha, beta, game);
         // Return the best move (there's always at least 1 move, otherwise the game would've been over)
+        assert bestMove != null;
         bestMove.setMoveValue(bestScore);
         return bestMove;
     }
