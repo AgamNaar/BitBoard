@@ -62,8 +62,10 @@ public class GameEngine extends Thread {
                 depthSearch += 2;
             }
         } finally {
-            System.out.println("Depth search: " + successfulDepthSearch + ". Position evaluated: " + successfulCounter);
-            System.out.println("Move found: " + bestMove.toStringWithMoveValue());
+            if (bestMove != null) {
+                System.out.println("Depth search: " + successfulDepthSearch + ". Position evaluated: " + successfulCounter);
+                System.out.println("Move found: " + bestMove.toStringWithMoveValue());
+            }
         }
     }
 
@@ -145,7 +147,7 @@ public class GameEngine extends Thread {
     }
 
     // Reset the game engine for a new game
-    public void resetEngine(){
+    public void resetEngine() {
         // Stop all running searches
         this.interrupt();
         // Reset transposition table
