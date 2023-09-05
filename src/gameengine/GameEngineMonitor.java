@@ -1,6 +1,6 @@
 package gameengine;
 
-import Gui.TempGui;
+import Gui.ChessBoardGui;
 
 // Monitor class for GameEngine thread, to let it know to stop searching when the time is over
 public class GameEngineMonitor extends Thread {
@@ -10,10 +10,10 @@ public class GameEngineMonitor extends Thread {
     private final GameEngine gameEngine;
 
     private final int timeToKIllInSecond;
-    private final TempGui gui;
+    private final ChessBoardGui gui;
 
     // Builder, get gameEngine to interrupt it, and the gui that when the search is over to play that move
-    public GameEngineMonitor(GameEngine gameEngine, TempGui gui, int searchTimeSecond) {
+    public GameEngineMonitor(GameEngine gameEngine, ChessBoardGui gui, int searchTimeSecond) {
         timeToKIllInSecond = searchTimeSecond;
         this.gameEngine = gameEngine;
         this.gui = gui;

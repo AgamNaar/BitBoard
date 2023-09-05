@@ -1,6 +1,6 @@
 package gameengine;
 
-import Gui.TempGui;
+import Gui.ChessBoardGui;
 import gamelogic.ChessGame;
 
 import java.util.LinkedList;
@@ -22,8 +22,12 @@ public class GameEngine extends Thread {
 
     public static final GameEvaluater gameEvaluater = new GameEvaluater();
 
+    // Empty builder
+    public GameEngine() {
+    }
+
     // Builder, create monitor to stop search when time is over
-    public GameEngine(ChessGame game, TempGui gui, int startingDepthSearch, int searchTimeSecond, boolean withTimeLimit) {
+    public GameEngine(ChessGame game, ChessBoardGui gui, int startingDepthSearch, int searchTimeSecond, boolean withTimeLimit) {
         gameToEvaluate = game;
         this.depthSearch = startingDepthSearch;
         // If there is a time limit, add monitor to stop it the run after set time
@@ -138,5 +142,13 @@ public class GameEngine extends Thread {
     // Return the best move from the last successful search
     public PieceMove getBestMove() {
         return bestMove;
+    }
+
+    // Reset the game engine for a new game
+    public void resetEngine(){
+        // Stop all running searches
+        this.interrupt();
+        // Reset transposition table
+        transpositionTableHandler.clearTable();
     }
 }
